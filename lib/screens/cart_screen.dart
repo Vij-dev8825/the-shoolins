@@ -14,7 +14,9 @@ import '../utils/currency.dart';
 import '../utils/order_ref.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/empty_state.dart';
+import '../widgets/payment_sheet.dart';
 import '../widgets/price_text.dart';
+import '../widgets/product_image.dart';
 import '../widgets/shine_effect.dart';
 import 'collections_screen.dart';
 import 'orders_screen.dart';
@@ -61,6 +63,10 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Future<void> _checkout() async {
+    final amount = context.read<CartService>().total;
+    final paid = await showPaymentSheet(context, amount: amount);
+    if (!mounted || paid != true) return;
+
     setState(() => _isCheckingOut = true);
     try {
       final order = await context.read<OrderService>().checkout();
@@ -71,20 +77,6 @@ class _CartScreenState extends State<CartScreen> {
             title: 'Order confirmed',
             message: 'Your order #${shortOrderRef(order.id)} for ${formatInr(order.total)} has been placed.',
           );
-      if (!mounted) return;
-      await showDialog<void>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Order placed'),
-          content: const Text('Your order has been placed successfully.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const OrdersScreen()),
@@ -246,7 +238,7 @@ class _CartItemTile extends StatelessWidget {
               height: 90,
               child: Container(
                 color: AppColors.surfaceMuted,
-                child: Image.asset(productAssetPath(item.image), fit: BoxFit.cover),
+                child: ProductImage(imageFilename: item.image, imageBase64: item.imageBase64),
               ),
             ),
           ),

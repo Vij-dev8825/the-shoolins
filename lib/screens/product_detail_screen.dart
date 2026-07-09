@@ -1,19 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_strings.dart';
+import '../models/app_notification.dart';
 import '../models/product.dart';
 import '../services/api_client.dart';
 import '../services/cart_service.dart';
+import '../services/notification_service.dart';
+import '../services/order_service.dart';
 import '../services/product_service.dart';
 import '../services/wishlist_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+import '../utils/currency.dart';
+import '../utils/order_ref.dart';
+import '../widgets/payment_sheet.dart';
 import '../widgets/price_text.dart';
+import '../widgets/product_image.dart';
 import '../widgets/shine_effect.dart';
 import '../widgets/trust_badge.dart';
 import '../widgets/zoomable_image_viewer.dart';
-import 'cart_screen.dart';
+import 'orders_screen.dart';
 
 const List<String> _sizes = ['S', 'M', 'L', 'XL'];
 
@@ -86,8 +93,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     try {
       await context.read<CartService>().addToCart(product.id, quantity: _quantity);
       if (!mounted) return;
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const CartScreen()),
+      final amount = context.read<CartService>().total;
+      final paid = await showPaymentSheet(context, amount: amount);
+      if (!mounted || paid != true) return;
+
+      final order = await context.read<OrderService>().checkout();
+      if (!mounted) return;
+      context.read<CartService>().clear();
+      await context.read<NotificationService>().add(
+            type: NotificationType.order,
+            title: 'Order confirmed',
+            message: 'Your order #${shortOrderRef(order.id)} for ${formatInr(order.total)} has been placed.',
+          );
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const OrdersScreen()),
       );
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -147,7 +167,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     GestureDetector(
                       onTap: () => ZoomableImageViewer.show(
                         context,
-                        imagePath: productAssetPath(product.image),
+                        image: productImageProvider(
+                          imageFilename: product.image,
+                          imageBase64: product.imageBase64,
+                        ),
                         heroTag: 'product-image-${product.id}',
                       ),
                       child: Hero(
@@ -156,9 +179,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           aspectRatio: 0.85,
                           child: Container(
                             color: AppColors.surfaceMuted,
-                            child: Image.asset(
-                              productAssetPath(product.image),
-                              fit: BoxFit.cover,
+                            child: ProductImage(
+                              imageFilename: product.image,
+                              imageBase64: product.imageBase64,
                             ),
                           ),
                         ),
