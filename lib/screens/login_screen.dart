@@ -71,10 +71,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: AppSpacing.xxl),
-                    Text(
-                      'THE SHOOLINS',
-                      textAlign: TextAlign.center,
-                      style: AppTypography.wordmark.copyWith(color: AppColors.accentDark),
+                    Image.asset(
+                      'assets/branding/icon.png',
+                      height: 140,
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(

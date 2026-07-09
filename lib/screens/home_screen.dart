@@ -11,6 +11,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../widgets/app_drawer.dart';
+import '../widgets/hero_video.dart';
 import '../widgets/product_card.dart';
 import '../widgets/section_header.dart';
 import '../widgets/shimmer_loading.dart';
@@ -66,7 +67,23 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       drawer: const AppDrawer(),
       appBar: AppBar(
-        title: const Text('THE SHOOLINS'),
+        titleSpacing: 0,
+        title: Row(
+          children: [
+            ClipOval(
+              child: Image.asset(
+                'assets/branding/icon.png',
+                height: 32,
+                width: 32,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            const Flexible(
+              child: Text('THE SHOOLINS', overflow: TextOverflow.ellipsis),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.receipt_long_outlined),
@@ -170,19 +187,19 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(
-                height: 420,
+                height: 480,
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.asset(productAssetPath('shirt3.png'), fit: BoxFit.cover),
+                    const HeroVideo(),
                     DecoratedBox(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            Colors.black.withValues(alpha: 0.05),
-                            Colors.black.withValues(alpha: 0.65),
+                            Colors.black.withValues(alpha: 0.15),
+                            Colors.black.withValues(alpha: 0.75),
                           ],
                         ),
                       ),

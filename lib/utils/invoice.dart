@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import '../models/order.dart';
@@ -18,6 +19,8 @@ final _boldStyle = pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, co
 
 Future<Uint8List> buildInvoicePdf({required Order order, User? user}) async {
   final doc = pw.Document();
+  final logoBytes = await rootBundle.load('assets/branding/icon.png');
+  final logo = pw.MemoryImage(logoBytes.buffer.asUint8List());
 
   doc.addPage(
     pw.Page(
@@ -26,7 +29,7 @@ Future<Uint8List> buildInvoicePdf({required Order order, User? user}) async {
       build: (context) => pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          _header(),
+          _header(logo),
           pw.SizedBox(height: 24),
           _billingRow(order, user),
           pw.SizedBox(height: 24),
@@ -43,20 +46,27 @@ Future<Uint8List> buildInvoicePdf({required Order order, User? user}) async {
   return doc.save();
 }
 
-pw.Widget _header() {
+pw.Widget _header(pw.MemoryImage logo) {
   return pw.Row(
     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
     crossAxisAlignment: pw.CrossAxisAlignment.start,
     children: [
-      pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
+      pw.Row(
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
         children: [
-          pw.Text(
-            'THE SHOOLINS',
-            style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, letterSpacing: 3, color: _ink),
+          pw.ClipOval(child: pw.Image(logo, height: 44, width: 44, fit: pw.BoxFit.cover)),
+          pw.SizedBox(width: 10),
+          pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(
+                'THE SHOOLINS',
+                style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, letterSpacing: 3, color: _ink),
+              ),
+              pw.SizedBox(height: 4),
+              pw.Text('Fashion & Ethnic Wear', style: _mutedStyle),
+            ],
           ),
-          pw.SizedBox(height: 4),
-          pw.Text('Fashion & Ethnic Wear', style: _mutedStyle),
         ],
       ),
       pw.Text(

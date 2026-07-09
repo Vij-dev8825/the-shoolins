@@ -33,9 +33,9 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Center(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: Column(
@@ -43,10 +43,9 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: AppSpacing.xl),
-                  Text(
-                    'THE SHOOLINS',
-                    textAlign: TextAlign.center,
-                    style: AppTypography.wordmark.copyWith(color: AppColors.accentDark),
+                  Image.asset(
+                    'assets/branding/icon.png',
+                    height: 140,
                   ),
                   const SizedBox(height: AppSpacing.xxl),
                   Text(
