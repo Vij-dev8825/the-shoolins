@@ -20,6 +20,13 @@ class ApiException implements Exception {
 class ApiClient {
   String? _token;
 
+  // Called whenever a request comes back 401 — the token's signature was
+  // valid but the session is no longer good (expired, or the account it
+  // points to is gone, e.g. after a database reset). Wired up in main.dart
+  // to log the user out and drop them back at the login screen instead of
+  // leaving them stuck retrying requests that will never succeed.
+  void Function()? onUnauthorized;
+
   void setToken(String? token) {
     _token = token;
   }
@@ -64,6 +71,10 @@ class ApiClient {
   }
 
   dynamic _decode(http.Response response) {
+    if (response.statusCode == 401) {
+      onUnauthorized?.call();
+    }
+
     if (response.statusCode == 204 || response.body.isEmpty) {
       if (response.statusCode >= 400) {
         throw ApiException(response.statusCode, 'Request failed');

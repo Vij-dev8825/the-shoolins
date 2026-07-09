@@ -11,6 +11,8 @@ import 'services/order_service.dart';
 import 'services/product_service.dart';
 import 'services/wishlist_service.dart';
 
+final navigatorKey = GlobalKey<NavigatorState>();
+
 void main() {
   runApp(const TheShoolinsApp());
 }
@@ -24,7 +26,24 @@ class TheShoolinsApp extends StatelessWidget {
       providers: [
         Provider<ApiClient>(create: (_) => ApiClient()),
         ChangeNotifierProvider<AuthService>(
-          create: (context) => AuthService(context.read<ApiClient>())..loadFromStorage(),
+          create: (context) {
+            final apiClient = context.read<ApiClient>();
+            final auth = AuthService(apiClient)..loadFromStorage();
+            apiClient.onUnauthorized = () {
+              auth.logout();
+              final navigator = navigatorKey.currentState;
+              if (navigator == null) return;
+              navigator.pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const LanguageGate()),
+                (route) => false,
+              );
+              final messengerContext = navigator.context;
+              ScaffoldMessenger.of(messengerContext).showSnackBar(
+                const SnackBar(content: Text('Your session has expired. Please log in again.')),
+              );
+            };
+            return auth;
+          },
         ),
         Provider<ProductService>(
           create: (context) => ProductService(context.read<ApiClient>()),
@@ -46,6 +65,7 @@ class TheShoolinsApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         title: 'The Shoolins',
         theme: AppTheme.light,
         home: const LanguageGate(),
