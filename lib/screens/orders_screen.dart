@@ -3,7 +3,6 @@ import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_strings.dart';
 import '../models/order.dart';
-import '../services/api_client.dart';
 import '../services/auth_service.dart';
 import '../services/order_service.dart';
 import '../theme/app_colors.dart';
@@ -13,6 +12,7 @@ import '../utils/invoice.dart';
 import '../utils/order_ref.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/price_text.dart';
+import '../widgets/product_image.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -143,9 +143,9 @@ class _OrderCardState extends State<_OrderCard> {
                               BorderSide(color: AppColors.surface, width: 2),
                             ),
                           ),
-                          child: Image.asset(
-                            productAssetPath(order.items[i].image),
-                            fit: BoxFit.cover,
+                          child: ProductImage(
+                            imageFilename: order.items[i].image,
+                            imageBase64: order.items[i].imageBase64,
                           ),
                         ),
                       ),

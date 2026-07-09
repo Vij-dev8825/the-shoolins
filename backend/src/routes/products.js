@@ -10,6 +10,7 @@ function toPublicProduct(product) {
     name: product.name,
     price: Number(product.price),
     image: product.image,
+    imageBase64: product.imageBase64,
     category: product.category,
   };
 }

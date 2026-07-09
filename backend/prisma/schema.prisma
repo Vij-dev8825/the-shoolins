@@ -25,11 +25,12 @@ model User {
 }
 
 model Product {
-  id       String  @id @default(cuid())
-  name     String
-  price    Decimal @db.Decimal(10, 2)
-  image    String
-  category String
+  id          String  @id @default(cuid())
+  name        String
+  price       Decimal @db.Decimal(10, 2)
+  image       String
+  imageBase64 String? @db.Text
+  category    String
 
   cartItems CartItem[]
   wishlist  WishlistItem[]
@@ -73,13 +74,14 @@ model Order {
 // so historical orders keep displaying what the customer actually bought
 // even if the product is later renamed, repriced, or deleted.
 model OrderItem {
-  id        String  @id @default(cuid())
-  orderId   String
-  productId String
-  name      String
-  price     Decimal @db.Decimal(10, 2)
-  image     String
-  quantity  Int
+  id          String  @id @default(cuid())
+  orderId     String
+  productId   String
+  name        String
+  price       Decimal @db.Decimal(10, 2)
+  image       String
+  imageBase64 String? @db.Text
+  quantity    Int
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }

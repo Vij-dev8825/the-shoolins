@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/product.dart';
-import '../services/api_client.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import 'price_text.dart';
+import 'product_image.dart';
 
 // Shared product tile used on Home, Collections, Search and Wishlist.
 // Wishlist heart and add-to-cart button are both optional so each screen
@@ -90,9 +90,9 @@ class _ProductCardState extends State<ProductCard> {
                 children: [
                   Container(
                     color: AppColors.surfaceMuted,
-                    child: Image.asset(
-                      productAssetPath(product.image),
-                      fit: BoxFit.cover,
+                    child: ProductImage(
+                      imageFilename: product.image,
+                      imageBase64: product.imageBase64,
                     ),
                   ),
                   Positioned(

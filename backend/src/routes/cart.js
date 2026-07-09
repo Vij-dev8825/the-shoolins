@@ -13,6 +13,7 @@ function toCartResponse(cartItem) {
     name: cartItem.product.name,
     price: Number(cartItem.product.price),
     image: cartItem.product.image,
+    imageBase64: cartItem.product.imageBase64,
     quantity: cartItem.quantity,
   };
 }

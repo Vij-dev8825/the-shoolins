@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 
 // Full-screen pinch-zoom/pan viewer for a product image, entered via a Hero
-// flight from the thumbnail that triggered it. Kept generic (path + tag in,
-// no product/service imports) so it can be reused for any image later.
+// flight from the thumbnail that triggered it. Kept generic (image provider +
+// tag in, no product/service imports) so it can be reused for any image later.
 class ZoomableImageViewer extends StatefulWidget {
-  final String imagePath;
+  final ImageProvider image;
   final Object heroTag;
 
-  const ZoomableImageViewer({super.key, required this.imagePath, required this.heroTag});
+  const ZoomableImageViewer({super.key, required this.image, required this.heroTag});
 
-  static void show(BuildContext context, {required String imagePath, required Object heroTag}) {
+  static void show(BuildContext context, {required ImageProvider image, required Object heroTag}) {
     Navigator.of(context).push(
       PageRouteBuilder(
         opaque: true,
         barrierColor: Colors.black,
-        pageBuilder: (context, _, _) => ZoomableImageViewer(imagePath: imagePath, heroTag: heroTag),
+        pageBuilder: (context, _, _) => ZoomableImageViewer(image: image, heroTag: heroTag),
         transitionsBuilder: (context, animation, _, child) =>
             FadeTransition(opacity: animation, child: child),
       ),
@@ -91,7 +91,7 @@ class _ZoomableImageViewerState extends State<ZoomableImageViewer>
                     transformationController: _transformController,
                     minScale: 1,
                     maxScale: 4,
-                    child: Image.asset(widget.imagePath, fit: BoxFit.contain),
+                    child: Image(image: widget.image, fit: BoxFit.contain),
                   ),
                 ),
               ),

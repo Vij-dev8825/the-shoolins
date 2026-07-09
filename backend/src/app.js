@@ -1,22 +1,30 @@
 const express = require("express");
+const path = require("path");
 const cors = require("cors");
 const authRoutes = require("./routes/auth");
 const productRoutes = require("./routes/products");
 const cartRoutes = require("./routes/cart");
 const orderRoutes = require("./routes/orders");
 const wishlistRoutes = require("./routes/wishlist");
+const adminRoutes = require("./routes/admin");
 const { notFoundHandler, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+// Product images go through here as base64, so the default 100kb JSON body
+// limit needs raising — the admin page also downsizes images client-side
+// before upload, but this leaves headroom.
+app.use(express.json({ limit: "8mb" }));
+
+app.use("/admin", express.static(path.join(__dirname, "../public/admin")));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

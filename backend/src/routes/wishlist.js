@@ -13,6 +13,7 @@ function toWishlistResponse(wishlistItem) {
     name: wishlistItem.product.name,
     price: Number(wishlistItem.product.price),
     image: wishlistItem.product.image,
+    imageBase64: wishlistItem.product.imageBase64,
     category: wishlistItem.product.category,
   };
 }
