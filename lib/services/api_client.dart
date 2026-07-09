@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-// Android emulators can't reach the host machine via localhost; they need
-// 10.0.2.2, which is the emulator's alias for the host loopback address.
-// We target Flutter web against a locally-run backend, so localhost is correct here.
-const String apiBaseUrl = 'http://localhost:4000/api';
+// Backend is deployed on Render, backed by a Neon Postgres database — see
+// backend/README.md for the deployment setup. The free Render tier spins
+// down after 15 minutes of inactivity, so the first request after idle can
+// take 30-60s to wake back up; that's expected, not a bug.
+const String apiBaseUrl = 'https://the-shoolins.onrender.com/api';
 
 class ApiException implements Exception {
   final int statusCode;
