@@ -46,20 +46,15 @@ router.post("/", async (req, res, next) => {
       throw new HttpError(404, "Product not found");
     }
 
-    const existing = await prisma.cartItem.findUnique({
+    // upsert instead of find-then-create/update: two requests for the same
+    // product landing close together (e.g. a rapid double-tap) could both
+    // see "no existing row" and both try to create one, and the loser would
+    // hit the userId_productId unique constraint as an unhandled 500.
+    await prisma.cartItem.upsert({
       where: { userId_productId: { userId: req.userId, productId } },
+      update: { quantity: { increment: quantity } },
+      create: { userId: req.userId, productId, quantity },
     });
-
-    if (existing) {
-      await prisma.cartItem.update({
-        where: { id: existing.id },
-        data: { quantity: existing.quantity + quantity },
-      });
-    } else {
-      await prisma.cartItem.create({
-        data: { userId: req.userId, productId, quantity },
-      });
-    }
 
     res.status(200).json(await getCartForUser(req.userId));
   } catch (error) {
