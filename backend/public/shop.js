@@ -306,7 +306,7 @@ const Shop = (() => {
               <span class="qv-qty-value" id="qv-qty-value">${quantity}</span>
               <button class="qv-qty-btn" id="qv-qty-plus">+</button>
             </div>
-            <div style="display:flex;gap:10px;margin-top:auto">
+            <div style="display:flex;gap:10px;margin-top:4px">
               <button class="btn btn-gold shine" id="qv-add-btn" style="flex:1">Add to Cart</button>
               <button class="qv-wish-btn ${wished ? 'active' : ''}" id="qv-wish-btn">${wished ? '&#10084;' : '&#9825;'}</button>
             </div>
