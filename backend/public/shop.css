@@ -504,7 +504,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outl
 .muted { color: var(--muted); font-size: 14px; }
 .divider-line { border: none; border-top: 1px solid var(--divider); margin: 18px 0; }
 .gallery-dots { display: flex; gap: 5px; justify-content: center; margin-top: 10px; }
-.gallery-dots .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--divider); }
+.gallery-dots .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--divider); cursor: pointer; transition: width 0.2s ease, height 0.2s ease; }
 .gallery-dots .dot.active { width: 8px; height: 8px; background: var(--gold-dark); }
 
 footer.site-footer { text-align: center; padding: 30px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--divider); background: var(--surface); }
