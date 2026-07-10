@@ -11,6 +11,7 @@ function toPublicProduct(product) {
     price: Number(product.price),
     image: product.image,
     imageBase64: product.imageBase64,
+    imagesBase64: product.imagesBase64,
     category: product.category,
   };
 }

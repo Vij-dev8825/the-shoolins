@@ -25,12 +25,16 @@ model User {
 }
 
 model Product {
-  id          String  @id @default(cuid())
-  name        String
-  price       Decimal @db.Decimal(10, 2)
-  image       String
-  imageBase64 String? @db.Text
-  category    String
+  id           String   @id @default(cuid())
+  name         String
+  price        Decimal  @db.Decimal(10, 2)
+  image        String
+  imageBase64  String?  @db.Text
+  // Extra gallery photos beyond the cover (imageBase64/image) — only the
+  // product detail screen's scrolling carousel shows these; every other
+  // place (cards, cart, wishlist, orders) still shows just the cover photo.
+  imagesBase64 String[] @default([])
+  category     String
 
   cartItems CartItem[]
   wishlist  WishlistItem[]

@@ -54,11 +54,26 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   double _heartScale = 1.0;
   int _quantity = 1;
   String _selectedSize = _sizes[1];
+  final PageController _galleryController = PageController();
+  int _galleryPage = 0;
 
   @override
   void initState() {
     super.initState();
     _productFuture = context.read<ProductService>().getProduct(widget.productId);
+  }
+
+  @override
+  void dispose() {
+    _galleryController.dispose();
+    super.dispose();
+  }
+
+  List<ImageProvider> _galleryImages(Product product) {
+    return [
+      productImageProvider(imageFilename: product.image, imageBase64: product.imageBase64),
+      for (final img in product.imagesBase64) productImageProvider(imageFilename: '', imageBase64: img),
+    ];
   }
 
   Future<void> _addToCart(Product product) async {
@@ -164,28 +179,63 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               children: [
                 Stack(
                   children: [
-                    GestureDetector(
-                      onTap: () => ZoomableImageViewer.show(
-                        context,
-                        image: productImageProvider(
-                          imageFilename: product.image,
-                          imageBase64: product.imageBase64,
-                        ),
-                        heroTag: 'product-image-${product.id}',
-                      ),
-                      child: Hero(
-                        tag: 'product-image-${product.id}',
-                        child: AspectRatio(
+                    Builder(
+                      builder: (context) {
+                        final images = _galleryImages(product);
+                        return AspectRatio(
                           aspectRatio: 0.85,
-                          child: Container(
-                            color: AppColors.surfaceMuted,
-                            child: ProductImage(
-                              imageFilename: product.image,
-                              imageBase64: product.imageBase64,
-                            ),
+                          child: Stack(
+                            children: [
+                              PageView.builder(
+                                controller: _galleryController,
+                                itemCount: images.length,
+                                onPageChanged: (i) => setState(() => _galleryPage = i),
+                                itemBuilder: (context, index) => GestureDetector(
+                                  onTap: () => ZoomableImageViewer.show(
+                                    context,
+                                    image: images[index],
+                                    heroTag: 'product-image-${product.id}-$index',
+                                  ),
+                                  child: Hero(
+                                    tag: 'product-image-${product.id}-$index',
+                                    child: Container(
+                                      color: AppColors.surfaceMuted,
+                                      child: Image(image: images[index], fit: BoxFit.cover),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              if (images.length > 1)
+                                Positioned(
+                                  bottom: AppSpacing.sm,
+                                  left: 0,
+                                  right: 0,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      for (var i = 0; i < images.length; i++)
+                                        AnimatedContainer(
+                                          duration: const Duration(milliseconds: 200),
+                                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                                          width: _galleryPage == i ? 8 : 6,
+                                          height: _galleryPage == i ? 8 : 6,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: _galleryPage == i
+                                                ? AppColors.surface
+                                                : AppColors.surface.withValues(alpha: 0.5),
+                                            boxShadow: const [
+                                              BoxShadow(color: Color(0x33000000), blurRadius: 4),
+                                            ],
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                            ],
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
                     Positioned(
                       top: AppSpacing.md,

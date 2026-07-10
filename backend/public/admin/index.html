@@ -83,6 +83,23 @@
   th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--divider); font-size: 14px; }
   th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
   img.thumb { width: 44px; height: 44px; object-fit: cover; border-radius: 6px; background: var(--surface-muted); }
+  .gallery-thumb-wrap { position: relative; display: inline-block; }
+  .gallery-thumb-wrap img.thumb { width: 64px; height: 64px; }
+  .gallery-remove {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--error);
+    color: var(--surface);
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1;
+    padding: 0;
+  }
   .row-actions { display: flex; gap: 8px; }
   .error { color: var(--error); font-size: 13px; margin-top: 8px; }
   .login-wrap {
@@ -130,9 +147,13 @@
         <option value="men">Men</option>
       </select>
 
-      <label for="image">Product photo</label>
+      <label for="image">Product photo (cover)</label>
       <input id="image" type="file" accept="image/*" />
       <img id="preview" class="thumb" style="display:none; margin-top:10px" />
+
+      <label for="gallery-input">Additional photos (gallery)</label>
+      <input id="gallery-input" type="file" accept="image/*" multiple />
+      <div id="gallery-preview" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px"></div>
 
       <div style="display:flex; gap:10px; align-items:center">
         <button class="primary" id="save-btn">Add product</button>
@@ -158,6 +179,7 @@ const API = '/api/admin';
 let token = localStorage.getItem('admin_token');
 let editingId = null;
 let pendingImageBase64 = null;
+let pendingImagesBase64 = [];
 
 const loginScreen = document.getElementById('login-screen');
 const app = document.getElementById('app');
@@ -265,9 +287,47 @@ document.getElementById('image').addEventListener('change', async (e) => {
   }
 });
 
+function renderGalleryPreview() {
+  const container = document.getElementById('gallery-preview');
+  container.innerHTML = '';
+  pendingImagesBase64.forEach((base64, index) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'gallery-thumb-wrap';
+    const img = document.createElement('img');
+    img.className = 'thumb';
+    img.src = `data:image/jpeg;base64,${base64}`;
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'gallery-remove';
+    removeBtn.textContent = '×';
+    removeBtn.addEventListener('click', () => {
+      pendingImagesBase64.splice(index, 1);
+      renderGalleryPreview();
+    });
+    wrap.appendChild(img);
+    wrap.appendChild(removeBtn);
+    container.appendChild(wrap);
+  });
+}
+
+document.getElementById('gallery-input').addEventListener('change', async (e) => {
+  const files = Array.from(e.target.files || []);
+  if (!files.length) return;
+  try {
+    for (const file of files) {
+      pendingImagesBase64.push(await fileToCompressedBase64(file));
+    }
+    renderGalleryPreview();
+  } catch (err) {
+    document.getElementById('form-error').textContent = err.message;
+  } finally {
+    e.target.value = '';
+  }
+});
+
 function resetForm() {
   editingId = null;
   pendingImageBase64 = null;
+  pendingImagesBase64 = [];
   document.getElementById('form-title').textContent = 'Add a product';
   document.getElementById('save-btn').textContent = 'Add product';
   document.getElementById('cancel-edit-btn').style.display = 'none';
@@ -276,6 +336,8 @@ function resetForm() {
   document.getElementById('category').value = 'women';
   document.getElementById('image').value = '';
   document.getElementById('preview').style.display = 'none';
+  document.getElementById('gallery-input').value = '';
+  renderGalleryPreview();
   document.getElementById('form-error').textContent = '';
 }
 
@@ -297,7 +359,7 @@ document.getElementById('save-btn').addEventListener('click', async () => {
     return;
   }
 
-  const body = { name, price, category };
+  const body = { name, price, category, imagesBase64: pendingImagesBase64 };
   if (pendingImageBase64) body.imageBase64 = pendingImageBase64;
 
   try {
@@ -324,6 +386,7 @@ document.getElementById('save-btn').addEventListener('click', async () => {
 function startEdit(product) {
   editingId = product.id;
   pendingImageBase64 = null;
+  pendingImagesBase64 = Array.isArray(product.imagesBase64) ? [...product.imagesBase64] : [];
   document.getElementById('form-title').textContent = `Editing "${product.name}"`;
   document.getElementById('save-btn').textContent = 'Save changes';
   document.getElementById('cancel-edit-btn').style.display = 'inline-block';
@@ -331,6 +394,8 @@ function startEdit(product) {
   document.getElementById('price').value = product.price;
   document.getElementById('category').value = product.category;
   document.getElementById('image').value = '';
+  document.getElementById('gallery-input').value = '';
+  renderGalleryPreview();
   const preview = document.getElementById('preview');
   if (product.imageBase64) {
     preview.src = `data:image/jpeg;base64,${product.imageBase64}`;

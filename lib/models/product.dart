@@ -4,6 +4,7 @@ class Product {
   final double price;
   final String image;
   final String? imageBase64;
+  final List<String> imagesBase64;
   final String category;
 
   Product({
@@ -12,6 +13,7 @@ class Product {
     required this.price,
     required this.image,
     this.imageBase64,
+    this.imagesBase64 = const [],
     required this.category,
   });
 
@@ -22,6 +24,7 @@ class Product {
       price: (json['price'] as num).toDouble(),
       image: json['image'] as String,
       imageBase64: json['imageBase64'] as String?,
+      imagesBase64: (json['imagesBase64'] as List<dynamic>?)?.cast<String>() ?? const [],
       category: json['category'] as String,
     );
   }

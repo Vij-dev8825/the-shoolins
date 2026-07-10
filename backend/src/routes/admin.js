@@ -16,8 +16,14 @@ function toAdminProduct(product) {
     price: Number(product.price),
     image: product.image,
     imageBase64: product.imageBase64,
+    imagesBase64: product.imagesBase64,
     category: product.category,
   };
+}
+
+function validateImagesBase64(imagesBase64) {
+  if (imagesBase64 === undefined) return true;
+  return Array.isArray(imagesBase64) && imagesBase64.every((img) => typeof img === "string");
 }
 
 router.post("/login", (req, res, next) => {
@@ -46,13 +52,16 @@ router.get("/products", async (req, res, next) => {
 
 router.post("/products", async (req, res, next) => {
   try {
-    const { name, price, category, imageBase64 } = req.body || {};
+    const { name, price, category, imageBase64, imagesBase64 } = req.body || {};
 
     if (!name || !price || !category) {
       throw new HttpError(400, "name, price, and category are required");
     }
     if (!CATEGORIES.includes(category)) {
       throw new HttpError(400, `category must be one of: ${CATEGORIES.join(", ")}`);
+    }
+    if (!validateImagesBase64(imagesBase64)) {
+      throw new HttpError(400, "imagesBase64 must be an array of strings");
     }
 
     const product = await prisma.product.create({
@@ -62,6 +71,7 @@ router.post("/products", async (req, res, next) => {
         category,
         image: "",
         imageBase64: imageBase64 || null,
+        imagesBase64: imagesBase64 || [],
       },
     });
     res.status(201).json(toAdminProduct(product));
@@ -72,10 +82,13 @@ router.post("/products", async (req, res, next) => {
 
 router.patch("/products/:id", async (req, res, next) => {
   try {
-    const { name, price, category, imageBase64 } = req.body || {};
+    const { name, price, category, imageBase64, imagesBase64 } = req.body || {};
 
     if (category && !CATEGORIES.includes(category)) {
       throw new HttpError(400, `category must be one of: ${CATEGORIES.join(", ")}`);
+    }
+    if (!validateImagesBase64(imagesBase64)) {
+      throw new HttpError(400, "imagesBase64 must be an array of strings");
     }
 
     const data = {};
@@ -83,6 +96,7 @@ router.patch("/products/:id", async (req, res, next) => {
     if (price !== undefined) data.price = price;
     if (category !== undefined) data.category = category;
     if (imageBase64 !== undefined) data.imageBase64 = imageBase64;
+    if (imagesBase64 !== undefined) data.imagesBase64 = imagesBase64;
 
     const product = await prisma.product.update({
       where: { id: req.params.id },
