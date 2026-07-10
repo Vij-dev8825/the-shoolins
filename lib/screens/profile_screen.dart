@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_strings.dart';
+import '../models/user.dart';
 import '../services/auth_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../widgets/app_drawer.dart';
+import '../widgets/shine_effect.dart';
 import 'edit_profile_screen.dart';
 import 'orders_screen.dart';
 
@@ -23,47 +25,16 @@ class ProfileScreen extends StatelessWidget {
     ].where((part) => part != null && part.isNotEmpty).join(', ');
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       drawer: const AppDrawer(),
       appBar: AppBar(title: Text(strings.t('profileTitle').toUpperCase())),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.md),
         children: [
-          Center(
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.fromBorderSide(BorderSide(color: AppColors.accent, width: 2)),
-                  ),
-                  child: CircleAvatar(
-                    radius: 36,
-                    backgroundColor: AppColors.accentSurface,
-                    backgroundImage: (user?.photoBase64 != null)
-                        ? MemoryImage(base64Decode(user!.photoBase64!))
-                        : null,
-                    child: user?.photoBase64 == null
-                        ? Text(
-                            (user?.name.isNotEmpty ?? false) ? user!.name[0].toUpperCase() : '?',
-                            style: AppTypography.headline.copyWith(color: AppColors.accentDark),
-                          )
-                        : null,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  (user?.name.isNotEmpty ?? false) ? user!.name : strings.t('guestUser'),
-                  style: AppTypography.headline,
-                ),
-                const SizedBox(height: 2),
-                Text('+91 ${user?.mobile ?? ''}', style: AppTypography.bodyMuted),
-                if (locationLine.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Text(locationLine, style: AppTypography.bodyMuted),
-                ],
-              ],
-            ),
+          _ProfileHeaderCard(
+            user: user,
+            locationLine: locationLine,
+            guestLabel: strings.t('guestUser'),
           ),
           const SizedBox(height: AppSpacing.xl),
           _ProfileMenuCard(
@@ -75,7 +46,7 @@ class ProfileScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => const EditProfileScreen()),
                 ),
               ),
-              const Divider(height: 1),
+              const Divider(height: 1, indent: AppSpacing.md, endIndent: AppSpacing.md),
               _ProfileMenuTile(
                 icon: Icons.receipt_long_outlined,
                 label: strings.t('profileOrders'),
@@ -86,13 +57,115 @@ class ProfileScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.xl),
-          OutlinedButton(
+          OutlinedButton.icon(
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.error,
               side: const BorderSide(color: AppColors.error),
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
             ),
             onPressed: () => context.read<AuthService>().logout(),
-            child: Text(strings.t('profileLogout')),
+            icon: const Icon(Icons.logout_rounded, size: 18),
+            label: Text(strings.t('profileLogout')),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileHeaderCard extends StatelessWidget {
+  final User? user;
+  final String locationLine;
+  final String guestLabel;
+
+  const _ProfileHeaderCard({required this.user, required this.locationLine, required this.guestLabel});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.accentDark.withValues(alpha: 0.18),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          Container(
+            height: 76,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [AppColors.accent, AppColors.accentDark],
+              ),
+            ),
+          ),
+          Container(
+            color: AppColors.surface,
+            padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
+            child: Column(
+              children: [
+                Transform.translate(
+                  offset: const Offset(0, -38),
+                  child: ShineEffect(
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.surface,
+                        boxShadow: [
+                          BoxShadow(color: Color(0x33000000), blurRadius: 12, offset: Offset(0, 4)),
+                        ],
+                      ),
+                      child: CircleAvatar(
+                        radius: 40,
+                        backgroundColor: AppColors.accentSurface,
+                        backgroundImage: (user?.photoBase64 != null)
+                            ? MemoryImage(base64Decode(user!.photoBase64!))
+                            : null,
+                        child: user?.photoBase64 == null
+                            ? Text(
+                                (user?.name.isNotEmpty ?? false) ? user!.name[0].toUpperCase() : '?',
+                                style: AppTypography.headline.copyWith(color: AppColors.accentDark),
+                              )
+                            : null,
+                      ),
+                    ),
+                  ),
+                ),
+                Transform.translate(
+                  offset: const Offset(0, -30),
+                  child: Column(
+                    children: [
+                      Text(
+                        (user?.name.isNotEmpty ?? false) ? user!.name : guestLabel,
+                        style: AppTypography.headline,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 4),
+                      Text('+91 ${user?.mobile ?? ''}', style: AppTypography.bodyMuted),
+                      if (locationLine.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.place_outlined, size: 14, color: AppColors.inkMuted),
+                            const SizedBox(width: 2),
+                            Text(locationLine, style: AppTypography.bodyMuted),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -135,7 +208,16 @@ class _ProfileMenuTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.accentDark),
+      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+      leading: Container(
+        width: 38,
+        height: 38,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.accentSurface,
+        ),
+        child: Icon(icon, color: AppColors.accentDark, size: 20),
+      ),
       title: Text(label, style: AppTypography.title),
       trailing: const Icon(Icons.chevron_right, color: AppColors.inkMuted),
       onTap: onTap,
