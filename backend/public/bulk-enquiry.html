@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bulk Enquiry — The Shoolins</title>
+<link rel="stylesheet" href="/shop.css" />
+</head>
+<body>
+
+<div id="shop-nav-mount"></div>
+
+<div class="page-banner">
+  <h1 data-i18n="bulkBannerTitle">Bulk &amp; Wholesale Enquiries</h1>
+  <p data-i18n="bulkBannerSub">For boutiques, retailers, and corporate orders</p>
+</div>
+
+<main class="shop-main narrow">
+  <div class="card" id="form-card">
+    <p class="muted" style="margin-top:0">
+      Looking to stock The Shoolins in your store, or place a large corporate
+      order? Tell us what you need and our team will get back to you.
+    </p>
+
+    <label for="be-name">Full name *</label>
+    <input id="be-name" type="text" placeholder="Your name" />
+
+    <label for="be-company">Company / Boutique name</label>
+    <input id="be-company" type="text" placeholder="Optional" />
+
+    <label for="be-email">Email *</label>
+    <input id="be-email" type="email" placeholder="you@company.com" />
+
+    <label for="be-phone">Phone *</label>
+    <input id="be-phone" type="tel" placeholder="10-digit mobile or landline" />
+
+    <label for="be-interest">Product interest</label>
+    <input id="be-interest" type="text" placeholder="e.g. Women's ethnic wear" />
+
+    <label for="be-quantity">Estimated quantity</label>
+    <input id="be-quantity" type="text" placeholder="e.g. 100–200 units / month" />
+
+    <label for="be-message">Message</label>
+    <textarea id="be-message" rows="4" placeholder="Tell us more about your requirement…"></textarea>
+
+    <p class="muted" id="be-error" style="color:var(--error);display:none"></p>
+
+    <button class="btn btn-gold btn-block shine" id="submit-enquiry-btn" data-i18n="submitEnquiryBtn" style="margin-top:16px">Submit Enquiry</button>
+  </div>
+</main>
+
+<footer class="site-footer">
+  &copy; <span id="year"></span> The Shoolins. <span data-i18n="footerRights">All rights reserved.</span>
+</footer>
+
+<script src="/i18n.js"></script>
+<script src="/shop.js"></script>
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+  Shop.renderNav('bulk');
+  I18N.apply();
+
+  document.getElementById('submit-enquiry-btn').addEventListener('click', async () => {
+    const errEl = document.getElementById('be-error');
+    errEl.style.display = 'none';
+
+    const name = document.getElementById('be-name').value.trim();
+    const email = document.getElementById('be-email').value.trim();
+    const phone = document.getElementById('be-phone').value.trim();
+
+    if (!name || !email || !phone) {
+      errEl.textContent = 'Name, email, and phone are required.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    const body = {
+      name,
+      company: document.getElementById('be-company').value.trim(),
+      email,
+      phone,
+      productInterest: document.getElementById('be-interest').value.trim(),
+      quantity: document.getElementById('be-quantity').value.trim(),
+      message: document.getElementById('be-message').value.trim(),
+    };
+
+    const btn = document.getElementById('submit-enquiry-btn');
+    btn.disabled = true;
+    try {
+      await Shop.apiFetch('/enquiries', { method: 'POST', body: JSON.stringify(body) });
+      document.getElementById('form-card').innerHTML = `
+        <div style="text-align:center;padding:20px 0">
+          <div class="pay-success-icon">&#10003;</div>
+          <h2 style="margin:16px 0 4px">Thank you!</h2>
+          <p class="muted">We've received your enquiry and will be in touch shortly.</p>
+        </div>
+      `;
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.style.display = 'block';
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

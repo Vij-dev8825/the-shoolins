@@ -22,6 +22,7 @@ model User {
   cartItems CartItem[]
   orders    Order[]
   wishlist  WishlistItem[]
+  reviews   Review[]
 }
 
 model Product {
@@ -88,4 +89,31 @@ model OrderItem {
   quantity    Int
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+// Site-wide testimonials, not tied to a specific product — the storefront
+// has no per-product review UI yet, just a single Reviews page.
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  rating    Int
+  comment   String   @db.Text
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// B2B bulk-order leads submitted from the storefront's enquiry form. No
+// auth required to submit (a prospective bulk buyer may not have an
+// account); only the admin panel can read them.
+model Enquiry {
+  id               String   @id @default(cuid())
+  name             String
+  company          String?
+  email            String
+  phone            String
+  productInterest  String?
+  quantity         String?
+  message          String?  @db.Text
+  createdAt        DateTime @default(now())
 }

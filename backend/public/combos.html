@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Combo Offers — The Shoolins</title>
+<link rel="stylesheet" href="/shop.css" />
+<style>
+  .combo-card { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+  .combo-thumbs { display: flex; gap: 10px; }
+  .combo-thumbs .thumb {
+    flex: 1; aspect-ratio: 0.85; border-radius: 10px; overflow: hidden; background: var(--divider);
+    position: relative;
+  }
+  .combo-thumbs .thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .combo-thumbs .plus {
+    position: absolute; top: 50%; right: -14px; transform: translateY(-50%);
+    width: 28px; height: 28px; border-radius: 50%; background: var(--gold);
+    color: var(--navy-deep); display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .combo-thumbs .thumb:last-child .plus { display: none; }
+  .combo-names { font-size: 13px; color: var(--muted); }
+  .combo-price-row { display: flex; justify-content: space-between; align-items: baseline; }
+  .combo-price-row .amount { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; color: var(--gold-dark); }
+</style>
+</head>
+<body>
+
+<div id="shop-nav-mount"></div>
+
+<div class="page-banner">
+  <h1 data-i18n="combosBannerTitle">Combo Offers</h1>
+  <p data-i18n="combosBannerSub">Frequently bought together, priced together</p>
+</div>
+
+<main class="shop-main narrow" id="combos-root">
+  <p class="muted">Loading…</p>
+</main>
+
+<footer class="site-footer">
+  &copy; <span id="year"></span> The Shoolins. <span data-i18n="footerRights">All rights reserved.</span>
+</footer>
+
+<script src="/i18n.js"></script>
+<script src="/shop.js"></script>
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+  Shop.renderNav('combos');
+  I18N.apply();
+
+  const BUNDLE_NAMES = ['The Everyday Duo', 'The Wardrobe Refresh', 'The Complete Look', 'The Season Starter'];
+
+  function chunk(arr, size) {
+    const out = [];
+    for (let i = 0; i + size <= arr.length; i += size) out.push(arr.slice(i, i + size));
+    return out;
+  }
+
+  async function loadCombos() {
+    const root = document.getElementById('combos-root');
+    try {
+      const products = await Shop.apiFetch('/products');
+      const bundles = chunk(products, 2).slice(0, 4);
+      if (!bundles.length) {
+        root.innerHTML = '<div class="empty-state"><div class="icon">&#127873;</div><p>No combo offers available right now.</p></div>';
+        return;
+      }
+      root.innerHTML = '';
+      bundles.forEach((items, i) => root.appendChild(renderBundle(items, BUNDLE_NAMES[i] || `Bundle ${i + 1}`)));
+    } catch (e) {
+      root.innerHTML = `<p class="muted">Could not load combos: ${e.message}</p>`;
+    }
+  }
+
+  function renderBundle(items, title) {
+    const total = items.reduce((sum, p) => sum + p.price, 0);
+    const el = document.createElement('div');
+    el.className = 'card combo-card';
+    el.innerHTML = `
+      <h2 style="margin:0">${title}</h2>
+      <div class="combo-thumbs">
+        ${items.map((p) => `
+          <div class="thumb">
+            <img src="${Shop.imageSrc(p)}" alt="${p.name}" />
+            <span class="plus">+</span>
+          </div>
+        `).join('')}
+      </div>
+      <div class="combo-names">${items.map((p) => p.name).join(' &nbsp;+&nbsp; ')}</div>
+      <div class="combo-price-row">
+        <span class="muted">Combined price</span>
+        <span class="amount">${Shop.formatInr(total)}</span>
+      </div>
+      <button class="btn btn-gold btn-block shine" data-i18n="addBundleBtn">Add Bundle to Cart</button>
+    `;
+    I18N.apply(el);
+    el.querySelector('button').addEventListener('click', () => addBundleToCart(items, el.querySelector('button')));
+    return el;
+  }
+
+  async function addBundleToCart(items, btn) {
+    if (!Shop.requireLogin()) return;
+    btn.disabled = true;
+    try {
+      for (const p of items) {
+        await Shop.apiFetch('/cart', { method: 'POST', body: JSON.stringify({ productId: p.id, quantity: 1 }) });
+      }
+      Shop.refreshCartCount();
+      Shop.toast('Bundle added to cart');
+    } catch (e) {
+      Shop.toast(e.message);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  loadCombos();
+</script>
+</body>
+</html>

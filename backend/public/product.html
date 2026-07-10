@@ -41,13 +41,15 @@
 </main>
 
 <footer class="site-footer">
-  &copy; <span id="year"></span> The Shoolins. All rights reserved.
+  &copy; <span id="year"></span> The Shoolins. <span data-i18n="footerRights">All rights reserved.</span>
 </footer>
 
+<script src="/i18n.js"></script>
 <script src="/shop.js"></script>
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
   Shop.renderNav('shop');
+  I18N.apply();
 
   const CATEGORY_COPY = {
     women: 'Cut from breathable, lightweight fabric with a relaxed silhouette that moves with you. Designed to layer effortlessly, season to season.',
@@ -119,8 +121,8 @@
           </div>
 
           <div style="margin-top:28px;display:flex;flex-direction:column;gap:12px">
-            <button class="btn btn-gold shine" id="add-to-cart-btn">Add to Cart</button>
-            <button class="btn btn-outline" id="buy-now-btn">Buy Now</button>
+            <button class="btn btn-gold shine" id="add-to-cart-btn" data-i18n="addToCartBtn">Add to Cart</button>
+            <button class="btn btn-outline" id="buy-now-btn" data-i18n="buyNowBtn">Buy Now</button>
           </div>
         </div>
       </div>
@@ -159,6 +161,7 @@
         dotsEl.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === index));
       });
     }
+    I18N.apply(root);
   }
 
   function setQty(v) {

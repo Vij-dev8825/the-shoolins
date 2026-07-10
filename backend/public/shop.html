@@ -11,8 +11,8 @@
 <div id="shop-nav-mount"></div>
 
 <div class="page-banner">
-  <h1>Shop The Collection</h1>
-  <p>Considered essentials, for every day</p>
+  <h1 data-i18n="shopBannerTitle">Shop The Collection</h1>
+  <p data-i18n="shopBannerSub">Considered essentials, for every day</p>
 </div>
 
 <main class="shop-main">
@@ -37,13 +37,15 @@
 </main>
 
 <footer class="site-footer">
-  &copy; <span id="year"></span> The Shoolins. All rights reserved.
+  &copy; <span id="year"></span> The Shoolins. <span data-i18n="footerRights">All rights reserved.</span>
 </footer>
 
+<script src="/i18n.js"></script>
 <script src="/shop.js"></script>
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
   Shop.renderNav('shop');
+  I18N.apply();
 
   const params = new URLSearchParams(window.location.search);
   let state = {

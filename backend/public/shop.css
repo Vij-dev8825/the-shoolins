@@ -56,12 +56,30 @@ header.shop-nav {
   gap: 8px;
 }
 .shop-nav .brand .crown { font-size: 16px; }
+.shop-nav .brand-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(212, 175, 55, 0.6);
+}
 .shop-nav nav {
   display: flex;
   align-items: center;
-  gap: 22px;
+  gap: 18px;
   flex-wrap: wrap;
 }
+.lang-select {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--cream);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.lang-select option { color: var(--ink); }
 .shop-nav nav a {
   color: var(--cream);
   font-size: 14px;

@@ -42,6 +42,13 @@ Seed data (6 products, ids are strings "1".."6", prices are INR):
 - `POST /wishlist` body `{ productId }` -> `200` updated wishlist array (idempotent — adding an already-wishlisted product is a no-op)
 - `DELETE /wishlist/:productId` -> `200` updated wishlist array
 
+## Reviews (site-wide, not per-product)
+- `GET /reviews` -> `200 [{ id, name, photoBase64, rating, comment, createdAt }]`, newest first. Public, no auth.
+- `POST /reviews` (auth required) body `{ rating: 1-5, comment }` -> `201` created review.
+
+## Enquiries (bulk/wholesale leads)
+- `POST /enquiries` body `{ name, email, phone, company?, productInterest?, quantity?, message? }` -> `201 { id, received: true }`. Public, no auth — a prospective bulk buyer may not have an account. Listed only via `GET /admin/enquiries` (admin auth required).
+
 ## Admin (product management)
 A minimal password-protected web UI lives at `/admin` (static page, not under `/api`). It calls these endpoints:
 - `POST /admin/login` body `{ password }` -> `200 { token }` (checked against `ADMIN_PASSWORD` env var) or `401`. Token carries `{ role: "admin" }`, expires in 12h.
@@ -50,6 +57,7 @@ A minimal password-protected web UI lives at `/admin` (static page, not under `/
 - `POST /admin/products` body `{ name, price, category, imageBase64, imagesBase64? }` -> `201` created product. `category` must be `men` or `women`. `imagesBase64` (if present) must be an array of base64 strings.
 - `PATCH /admin/products/:id` body any subset of `{ name, price, category, imageBase64, imagesBase64 }` -> `200` updated product, or `404`.
 - `DELETE /admin/products/:id` -> `204`, or `404`. Cascades to any existing cart/wishlist rows referencing it.
+- `GET /admin/enquiries` -> `200 [{ id, name, company, email, phone, productInterest, quantity, message, createdAt }]`, newest first.
 
 ## Errors
 All error responses: `{ error: "message" }` with appropriate 4xx/5xx status.

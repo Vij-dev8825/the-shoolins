@@ -29,8 +29,8 @@
 <div id="shop-nav-mount"></div>
 
 <div class="page-banner">
-  <h1>My Orders</h1>
-  <p>Your past purchases</p>
+  <h1 data-i18n="ordersBannerTitle">My Orders</h1>
+  <p data-i18n="ordersBannerSub">Your past purchases</p>
 </div>
 
 <main class="shop-main narrow" id="orders-root">
@@ -38,13 +38,15 @@
 </main>
 
 <footer class="site-footer">
-  &copy; <span id="year"></span> The Shoolins. All rights reserved.
+  &copy; <span id="year"></span> The Shoolins. <span data-i18n="footerRights">All rights reserved.</span>
 </footer>
 
+<script src="/i18n.js"></script>
 <script src="/shop.js"></script>
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
   Shop.renderNav('orders');
+  I18N.apply();
 
   function shortRef(id) { return id.slice(-7).toUpperCase(); }
   function formatDate(iso) {

@@ -23,8 +23,8 @@
 <div id="shop-nav-mount"></div>
 
 <div class="page-banner">
-  <h1>Your Cart</h1>
-  <p>Review your selections before checkout</p>
+  <h1 data-i18n="cartBannerTitle">Your Cart</h1>
+  <p data-i18n="cartBannerSub">Review your selections before checkout</p>
 </div>
 
 <main class="shop-main narrow" id="cart-root">
@@ -32,13 +32,15 @@
 </main>
 
 <footer class="site-footer">
-  &copy; <span id="year"></span> The Shoolins. All rights reserved.
+  &copy; <span id="year"></span> The Shoolins. <span data-i18n="footerRights">All rights reserved.</span>
 </footer>
 
+<script src="/i18n.js"></script>
 <script src="/shop.js"></script>
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
   Shop.renderNav('cart');
+  I18N.apply();
 
   let cart = [];
 
@@ -79,9 +81,10 @@
         <div class="summary-row"><span>Subtotal</span><span>${Shop.formatInr(total)}</span></div>
         <div class="summary-row"><span>Shipping</span><span>Free</span></div>
         <div class="summary-row total"><span>Total</span><span style="color:var(--gold-dark)">${Shop.formatInr(total)}</span></div>
-        <button class="btn btn-gold btn-block shine" id="checkout-btn" style="margin-top:18px">Checkout</button>
+        <button class="btn btn-gold btn-block shine" id="checkout-btn" style="margin-top:18px" data-i18n="checkoutBtn">Checkout</button>
       </div>
     `;
+    I18N.apply(root);
     const itemsEl = document.getElementById('cart-items');
     cart.forEach((item) => {
       const row = document.createElement('div');

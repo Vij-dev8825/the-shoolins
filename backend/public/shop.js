@@ -81,35 +81,56 @@ const Shop = (() => {
     }
   }
 
+  let lastActiveNav = undefined;
+
   function renderNav(active) {
     const mount = document.getElementById('shop-nav-mount');
     if (!mount) return;
+    if (active !== undefined) lastActiveNav = active;
+    active = lastActiveNav;
     const loggedIn = isLoggedIn();
-    const navLink = (href, label, key) =>
-      `<a href="${href}" ${active === key ? 'style="opacity:1;font-weight:600"' : ''}>${label}</a>`;
+    const navLink = (href, i18nKey, fallback, key) =>
+      `<a href="${href}" data-i18n="${i18nKey}" ${active === key ? 'style="opacity:1;font-weight:600"' : ''}>${fallback}</a>`;
+    const hasI18n = typeof I18N !== 'undefined';
+    const currentLang = hasI18n ? I18N.getLang() : 'en';
+    const langOptions = hasI18n
+      ? Object.entries(I18N.LANGS).map(([code, label]) =>
+          `<option value="${code}" ${code === currentLang ? 'selected' : ''}>${label}</option>`).join('')
+      : '';
 
     mount.innerHTML = `
       <header class="shop-nav">
         <div class="shop-nav-inner">
-          <a href="/" class="brand"><span class="crown">&#9813;</span> THE SHOOLINS</a>
+          <a href="/" class="brand"><img src="/media/logo.png" class="brand-logo" alt="The Shoolins" /> THE SHOOLINS</a>
           <nav>
-            ${navLink('/', 'Home', 'home')}
-            ${navLink('/shop.html', 'Shop', 'shop')}
-            ${navLink('/about.html', 'About', 'about')}
-            ${navLink('/contact.html', 'Contact', 'contact')}
+            ${navLink('/', 'navHome', 'Home', 'home')}
+            ${navLink('/shop.html', 'navShop', 'Shop', 'shop')}
+            ${navLink('/combos.html', 'navCombos', 'Combos', 'combos')}
+            ${navLink('/reviews.html', 'navReviews', 'Reviews', 'reviews')}
+            ${navLink('/bulk-enquiry.html', 'navBulk', 'Bulk Enquiry', 'bulk')}
+            ${navLink('/about.html', 'navAbout', 'About', 'about')}
+            ${navLink('/contact.html', 'navContact', 'Contact', 'contact')}
+            ${hasI18n ? `<select id="lang-select" class="lang-select">${langOptions}</select>` : ''}
             <a href="/wishlist.html" class="icon-link" title="Wishlist">&#9825;</a>
             <a href="/cart.html" class="icon-link" title="Cart">
               &#128092;
               <span class="badge" id="nav-cart-badge" style="display:none">0</span>
             </a>
             ${loggedIn
-              ? `<a href="/profile.html" class="pill shine">Profile</a>`
-              : `<a href="/login.html" class="pill shine">Login</a>`}
+              ? `<a href="/profile.html" class="pill shine" data-i18n="navProfile">Profile</a>`
+              : `<a href="/login.html" class="pill shine" data-i18n="navLogin">Login</a>`}
           </nav>
         </div>
       </header>
     `;
     refreshCartCount();
+    if (hasI18n) {
+      I18N.apply(mount);
+      document.getElementById('lang-select').addEventListener('change', (e) => {
+        I18N.setLang(e.target.value);
+        window.location.reload();
+      });
+    }
   }
 
   function updateNavAuthState() { renderNav(); }

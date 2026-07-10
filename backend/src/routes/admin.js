@@ -123,4 +123,13 @@ router.delete("/products/:id", async (req, res, next) => {
   }
 });
 
+router.get("/enquiries", async (req, res, next) => {
+  try {
+    const enquiries = await prisma.enquiry.findMany({ orderBy: { createdAt: "desc" } });
+    res.status(200).json(enquiries);
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;

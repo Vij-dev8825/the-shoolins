@@ -13,7 +13,7 @@
 <main class="shop-main narrow">
   <div class="card" style="max-width:420px;margin:40px auto">
     <div style="text-align:center;margin-bottom:8px">
-      <span style="font-size:28px">&#9813;</span>
+      <img src="/media/logo.png" alt="The Shoolins" style="width:52px;height:52px;border-radius:50%;border:2px solid var(--gold)" />
     </div>
     <h2 style="text-align:center">Welcome Back</h2>
     <p class="muted" style="text-align:center;margin-top:-6px">Sign in with your mobile number</p>
@@ -45,13 +45,15 @@
 </main>
 
 <footer class="site-footer">
-  &copy; <span id="year"></span> The Shoolins. All rights reserved.
+  &copy; <span id="year"></span> The Shoolins. <span data-i18n="footerRights">All rights reserved.</span>
 </footer>
 
+<script src="/i18n.js"></script>
 <script src="/shop.js"></script>
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
   Shop.renderNav('login');
+  I18N.apply();
 
   const params = new URLSearchParams(window.location.search);
   const nextUrl = params.get('next') || '/profile.html';

@@ -16,31 +16,31 @@
   </video>
   <div class="hero-overlay"></div>
   <div class="hero-content">
-    <span class="eyebrow-badge">New Season</span>
+    <span class="eyebrow-badge" data-i18n="heroBadge">New Season</span>
     <h1>THE SHOOLIN'S</h1>
     <p class="tagline">ELEVATE THE ELEGANCE WITHIN</p>
-    <a href="/shop.html" class="btn btn-gold shine">Shop The Collection</a>
+    <a href="/shop.html" class="btn btn-gold shine" data-i18n="heroCta">Shop The Collection</a>
   </div>
 </div>
 
 <main class="shop-main">
   <div class="grid-two" style="margin-bottom:48px">
     <a href="/shop.html?category=women" class="card" style="text-decoration:none">
-      <h2>For Women</h2>
+      <h2 data-i18n="forWomenTitle">For Women</h2>
       <p class="muted">Considered essentials in quiet colours — dresses, skirts, and blouses designed to layer effortlessly, season to season.</p>
     </a>
     <a href="/shop.html?category=men" class="card" style="text-decoration:none">
-      <h2>For Men</h2>
+      <h2 data-i18n="forMenTitle">For Men</h2>
       <p class="muted">Tailored from durable, breathable fabric with a clean, considered fit — built for everyday wear that holds its shape.</p>
     </a>
   </div>
 
   <div class="section-title">
     <div>
-      <span class="eyebrow">Handpicked</span>
-      <h2>Featured Pieces</h2>
+      <span class="eyebrow" data-i18n="featuredEyebrow">Handpicked</span>
+      <h2 data-i18n="featuredTitle">Featured Pieces</h2>
     </div>
-    <a href="/shop.html">View all &rarr;</a>
+    <a href="/shop.html" data-i18n="viewAll">View all &rarr;</a>
   </div>
   <div class="product-grid" id="featured-grid">
     <p class="muted">Loading…</p>
@@ -48,13 +48,15 @@
 </main>
 
 <footer class="site-footer">
-  &copy; <span id="year"></span> The Shoolins. All rights reserved.
+  &copy; <span id="year"></span> The Shoolins. <span data-i18n="footerRights">All rights reserved.</span>
 </footer>
 
+<script src="/i18n.js"></script>
 <script src="/shop.js"></script>
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
   Shop.renderNav('home');
+  I18N.apply();
 
   async function loadFeatured() {
     const grid = document.getElementById('featured-grid');

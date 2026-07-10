@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Reviews — The Shoolins</title>
+<link rel="stylesheet" href="/shop.css" />
+<style>
+  .rating-summary { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+  .rating-summary .big-number { font-family: 'Playfair Display', serif; font-size: 42px; font-weight: 700; color: var(--gold-dark); }
+  .stars { color: var(--gold); font-size: 16px; letter-spacing: 1px; }
+  .stars.dim { color: var(--divider); }
+  .review-card { display: flex; gap: 14px; margin-bottom: 16px; }
+  .review-avatar {
+    width: 42px; height: 42px; border-radius: 50%; background: var(--divider); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--gold-dark);
+    font-family: 'Playfair Display', serif; overflow: hidden;
+  }
+  .review-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .review-body .name { font-weight: 600; font-size: 14px; }
+  .review-body .date { font-size: 12px; color: var(--muted); }
+  .star-picker { display: flex; gap: 6px; font-size: 26px; cursor: pointer; margin: 10px 0; }
+  .star-picker span { color: var(--divider); }
+  .star-picker span.on { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<div id="shop-nav-mount"></div>
+
+<div class="page-banner">
+  <h1 data-i18n="reviewsBannerTitle">Customer Reviews</h1>
+  <p data-i18n="reviewsBannerSub">What our customers are saying</p>
+</div>
+
+<main class="shop-main narrow">
+  <div class="card" id="summary-card">
+    <p class="muted">Loading…</p>
+  </div>
+
+  <div class="card" id="write-review-card" style="display:none">
+    <h2 data-i18n="writeReviewBtn">Write a Review</h2>
+    <label>Your rating</label>
+    <div class="star-picker" id="star-picker">
+      <span data-value="1">&#9733;</span><span data-value="2">&#9733;</span><span data-value="3">&#9733;</span>
+      <span data-value="4">&#9733;</span><span data-value="5">&#9733;</span>
+    </div>
+    <label for="review-comment">Your review</label>
+    <textarea id="review-comment" rows="3" placeholder="Tell us about your experience…"></textarea>
+    <p class="muted" id="review-error" style="color:var(--error);display:none"></p>
+    <button class="btn btn-gold shine" id="submit-review-btn" style="margin-top:14px">Submit Review</button>
+  </div>
+
+  <div id="reviews-list">
+    <p class="muted">Loading…</p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  &copy; <span id="year"></span> The Shoolins. <span data-i18n="footerRights">All rights reserved.</span>
+</footer>
+
+<script src="/i18n.js"></script>
+<script src="/shop.js"></script>
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+  Shop.renderNav('reviews');
+  I18N.apply();
+
+  let selectedRating = 0;
+  let reviews = [];
+
+  function starString(rating) {
+    return '&#9733;'.repeat(rating) + '&#9734;'.repeat(5 - rating);
+  }
+
+  function formatDate(iso) {
+    const d = new Date(iso);
+    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+  }
+
+  async function loadReviews() {
+    try {
+      reviews = await Shop.apiFetch('/reviews');
+      renderSummary();
+      renderList();
+    } catch (e) {
+      document.getElementById('reviews-list').innerHTML = `<p class="muted">Could not load reviews: ${e.message}</p>`;
+    }
+  }
+
+  function renderSummary() {
+    const summary = document.getElementById('summary-card');
+    if (!reviews.length) {
+      summary.innerHTML = '<p class="muted">No reviews yet — be the first to share your experience.</p>';
+    } else {
+      const avg = reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
+      summary.innerHTML = `
+        <div class="rating-summary">
+          <span class="big-number">${avg.toFixed(1)}</span>
+          <div>
+            <div class="stars">${starString(Math.round(avg))}</div>
+            <div class="muted">${reviews.length} review${reviews.length === 1 ? '' : 's'}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    const writeCard = document.getElementById('write-review-card');
+    if (Shop.isLoggedIn()) {
+      writeCard.style.display = 'block';
+    } else {
+      writeCard.innerHTML = `
+        <p class="muted">Log in to write a review.</p>
+        <a href="/login.html?next=/reviews.html" class="btn btn-navy shine">Log In</a>
+      `;
+      writeCard.style.display = 'block';
+    }
+  }
+
+  function renderList() {
+    const list = document.getElementById('reviews-list');
+    if (!reviews.length) { list.innerHTML = ''; return; }
+    list.innerHTML = '';
+    reviews.forEach((r) => {
+      const el = document.createElement('div');
+      el.className = 'card review-card';
+      el.innerHTML = `
+        <div class="review-avatar">
+          ${r.photoBase64 ? `<img src="data:image/jpeg;base64,${r.photoBase64}" alt="${r.name}" />` : r.name[0].toUpperCase()}
+        </div>
+        <div class="review-body">
+          <div class="name">${r.name}</div>
+          <div class="stars">${starString(r.rating)}</div>
+          <p style="margin:6px 0">${r.comment}</p>
+          <div class="date">${formatDate(r.createdAt)}</div>
+        </div>
+      `;
+      list.appendChild(el);
+    });
+  }
+
+  document.querySelectorAll('#star-picker span').forEach((star) => {
+    star.addEventListener('click', () => {
+      selectedRating = Number(star.dataset.value);
+      document.querySelectorAll('#star-picker span').forEach((s) => {
+        s.classList.toggle('on', Number(s.dataset.value) <= selectedRating);
+      });
+    });
+  });
+
+  document.getElementById('submit-review-btn').addEventListener('click', async () => {
+    const errEl = document.getElementById('review-error');
+    errEl.style.display = 'none';
+    const comment = document.getElementById('review-comment').value.trim();
+    if (!selectedRating) { errEl.textContent = 'Please select a star rating.'; errEl.style.display = 'block'; return; }
+    if (!comment) { errEl.textContent = 'Please write a short review.'; errEl.style.display = 'block'; return; }
+    try {
+      await Shop.apiFetch('/reviews', { method: 'POST', body: JSON.stringify({ rating: selectedRating, comment }) });
+      document.getElementById('review-comment').value = '';
+      selectedRating = 0;
+      document.querySelectorAll('#star-picker span').forEach((s) => s.classList.remove('on'));
+      Shop.toast('Thanks for your review!');
+      loadReviews();
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.style.display = 'block';
+    }
+  });
+
+  loadReviews();
+</script>
+</body>
+</html>

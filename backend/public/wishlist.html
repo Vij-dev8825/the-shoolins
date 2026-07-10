@@ -11,8 +11,8 @@
 <div id="shop-nav-mount"></div>
 
 <div class="page-banner">
-  <h1>Your Wishlist</h1>
-  <p>Pieces you're saving for later</p>
+  <h1 data-i18n="wishlistBannerTitle">Your Wishlist</h1>
+  <p data-i18n="wishlistBannerSub">Pieces you're saving for later</p>
 </div>
 
 <main class="shop-main" id="wishlist-root">
@@ -20,13 +20,15 @@
 </main>
 
 <footer class="site-footer">
-  &copy; <span id="year"></span> The Shoolins. All rights reserved.
+  &copy; <span id="year"></span> The Shoolins. <span data-i18n="footerRights">All rights reserved.</span>
 </footer>
 
+<script src="/i18n.js"></script>
 <script src="/shop.js"></script>
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
   Shop.renderNav('wishlist');
+  I18N.apply();
 
   async function loadWishlist() {
     const root = document.getElementById('wishlist-root');

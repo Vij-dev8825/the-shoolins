@@ -35,13 +35,15 @@
 </main>
 
 <footer class="site-footer">
-  &copy; <span id="year"></span> The Shoolins. All rights reserved.
+  &copy; <span id="year"></span> The Shoolins. <span data-i18n="footerRights">All rights reserved.</span>
 </footer>
 
+<script src="/i18n.js"></script>
 <script src="/shop.js"></script>
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
   Shop.renderNav('profile');
+  I18N.apply();
 
   let user = null;
   let pendingPhotoBase64 = null;
@@ -120,8 +122,9 @@
         </div>
       </div>
 
-      <button class="btn btn-outline btn-block" id="logout-btn" style="margin-top:20px;color:var(--error);border-color:var(--error)">Log Out</button>
+      <button class="btn btn-outline btn-block" id="logout-btn" style="margin-top:20px;color:var(--error);border-color:var(--error)" data-i18n="profileBannerLogout">Log Out</button>
     `;
+    I18N.apply(root);
     document.getElementById('edit-tile').addEventListener('click', renderEdit);
     document.getElementById('logout-btn').addEventListener('click', () => {
       Shop.clearSession();

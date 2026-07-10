@@ -171,6 +171,16 @@
         <tbody id="product-rows"></tbody>
       </table>
     </div>
+
+    <div class="card">
+      <h2>Bulk &amp; Wholesale Enquiries</h2>
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Name</th><th>Company</th><th>Contact</th><th>Interest</th><th>Qty</th><th>Message</th></tr>
+        </thead>
+        <tbody id="enquiry-rows"></tbody>
+      </table>
+    </div>
   </main>
 </div>
 
@@ -188,6 +198,7 @@ function showApp() {
   loginScreen.style.display = 'none';
   app.style.display = 'block';
   loadProducts();
+  loadEnquiries();
 }
 
 function showLogin() {
@@ -466,6 +477,39 @@ async function loadProducts() {
     }
   } catch (e) {
     rows.innerHTML = `<tr><td colspan="5" class="error">${e.message}</td></tr>`;
+  }
+}
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+}
+
+async function loadEnquiries() {
+  const rows = document.getElementById('enquiry-rows');
+  rows.innerHTML = '<tr><td colspan="7">Loading…</td></tr>';
+  try {
+    const enquiries = await apiFetch('/enquiries', { headers: authHeaders() });
+    if (!enquiries.length) {
+      rows.innerHTML = '<tr><td colspan="7">No enquiries yet.</td></tr>';
+      return;
+    }
+    rows.innerHTML = '';
+    for (const e of enquiries) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${formatDate(e.createdAt)}</td>
+        <td>${e.name}</td>
+        <td>${e.company || '—'}</td>
+        <td>${e.email}<br />${e.phone}</td>
+        <td>${e.productInterest || '—'}</td>
+        <td>${e.quantity || '—'}</td>
+        <td>${e.message || '—'}</td>
+      `;
+      rows.appendChild(tr);
+    }
+  } catch (e) {
+    rows.innerHTML = `<tr><td colspan="7" class="error">${e.message}</td></tr>`;
   }
 }
 </script>
