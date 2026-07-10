@@ -165,6 +165,7 @@
 
     currentSlideIndex = 0;
     document.getElementById('zoom-btn').addEventListener('click', () => setupZoom(images, currentSlideIndex));
+    Shop.markBrokenImagesWithFallback(root);
 
     if (images.length > 1) {
       setupGallery(images.length);

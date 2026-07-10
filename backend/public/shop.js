@@ -1,5 +1,24 @@
 const API = '/api';
 
+const BROKEN_IMAGE = 'data:image/svg+xml,' + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">'
+  + '<rect width="200" height="200" fill="#e6ddc8"/>'
+  + '<g stroke="#766f5d" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round">'
+  + '<rect x="40" y="55" width="120" height="90" rx="8"/>'
+  + '<circle cx="75" cy="85" r="12"/>'
+  + '<path d="M40 130l35-30 25 20 30-35 30 35"/>'
+  + '</g></svg>'
+);
+
+function markBrokenImagesWithFallback(root) {
+  root.querySelectorAll('img').forEach((img) => {
+    img.addEventListener('error', () => {
+      img.onerror = null;
+      img.src = BROKEN_IMAGE;
+    }, { once: true });
+  });
+}
+
 const Shop = (() => {
   function getToken() { return localStorage.getItem('shop_token'); }
   function getUser() {
@@ -425,6 +444,7 @@ const Shop = (() => {
     `;
 
     document.body.appendChild(backdrop);
+    markBrokenImagesWithFallback(backdrop);
 
     // Pointer-driven carousel (matches the product detail page's gallery) so
     // dragging the image cycles through photos instead of leaving the only
@@ -547,6 +567,6 @@ const Shop = (() => {
     getToken, getUser, setSession, clearSession, isLoggedIn,
     apiFetch, formatInr, imageSrc, productImages, attachHoverScrub, toast,
     renderNav, updateNavAuthState, renderFooter, refreshCartCount, requireLogin, showPaymentSheet,
-    showQuickView,
+    showQuickView, markBrokenImagesWithFallback,
   };
 })();
