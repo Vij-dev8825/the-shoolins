@@ -17,6 +17,22 @@
     cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.2); font-size: 17px; color: var(--muted); z-index: 2;
   }
   .pd-wish-btn.active { color: var(--error); }
+  .pd-zoom-btn {
+    position: absolute; top: 14px; left: 14px; width: 40px; height: 40px; border-radius: 50%;
+    background: var(--surface); border: none; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.2); color: var(--muted); z-index: 2;
+  }
+  .pd-zoom-btn svg { width: 18px; height: 18px; }
+  .zoom-backdrop {
+    position: fixed; inset: 0; background: rgba(6,14,30,0.94); z-index: 300;
+    display: flex; align-items: center; justify-content: center; animation: fade-in 0.2s ease both;
+  }
+  .zoom-viewport { width: 100%; height: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center; touch-action: none; }
+  .zoom-viewport img {
+    max-width: 100%; max-height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none;
+    will-change: transform; cursor: zoom-in;
+  }
+  .zoom-viewport img.zoomed { cursor: grab; }
   .size-row { display: flex; gap: 10px; flex-wrap: wrap; }
   .size-chip {
     width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
@@ -61,6 +77,7 @@
   let selectedSize = 'M';
   let product = null;
   let wished = false;
+  let currentSlideIndex = 0;
 
   function galleryImages(p) {
     const imgs = [Shop.imageSrc(p)];
@@ -97,6 +114,7 @@
       <div class="pd-wrap">
         <div class="pd-gallery">
           <button class="pd-wish-btn ${wished ? 'active' : ''}" id="wish-btn">${wished ? '&#10084;' : '&#9825;'}</button>
+          <button class="pd-zoom-btn" id="zoom-btn" title="Zoom"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg></button>
           <div class="slides-track" id="slides-track">
             ${images.map((src) => `<img src="${src}" alt="${product.name}" draggable="false" />`).join('')}
           </div>
@@ -145,10 +163,99 @@
     document.getElementById('add-to-cart-btn').addEventListener('click', addToCart);
     document.getElementById('buy-now-btn').addEventListener('click', buyNow);
 
+    currentSlideIndex = 0;
+    document.getElementById('zoom-btn').addEventListener('click', () => setupZoom(images, currentSlideIndex));
+
     if (images.length > 1) {
       setupGallery(images.length);
     }
     I18N.apply(root);
+  }
+
+  // Full-screen zoom viewer: pinch (two-finger) to scale, drag to pan while
+  // zoomed, double-tap/double-click to toggle between 1x and ~2.2x.
+  function setupZoom(images, startIndex) {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'zoom-backdrop';
+    backdrop.innerHTML = `
+      <button class="modal-close-btn" id="zoom-close">&times;</button>
+      <div class="zoom-viewport" id="zoom-viewport">
+        <img src="${images[startIndex]}" id="zoom-img" draggable="false" />
+      </div>
+    `;
+    document.body.appendChild(backdrop);
+
+    const viewport = backdrop.querySelector('#zoom-viewport');
+    const img = backdrop.querySelector('#zoom-img');
+    const pointers = new Map();
+    let scale = 1, tx = 0, ty = 0;
+    let pinchStartDist = 0, pinchStartScale = 1;
+    let panStart = null;
+    let lastTapTime = 0;
+
+    function apply() {
+      img.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+      img.classList.toggle('zoomed', scale > 1);
+    }
+
+    function clamp() {
+      scale = Math.min(Math.max(scale, 1), 4);
+      if (scale === 1) { tx = 0; ty = 0; }
+    }
+
+    function toggleZoom() {
+      if (scale > 1) { scale = 1; tx = 0; ty = 0; }
+      else { scale = 2.2; }
+      apply();
+    }
+
+    viewport.addEventListener('pointerdown', (e) => {
+      try { viewport.setPointerCapture(e.pointerId); } catch (err) { /* pointer already released — ignore */ }
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pointers.size === 2) {
+        const [p1, p2] = [...pointers.values()];
+        pinchStartDist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+        pinchStartScale = scale;
+      } else if (pointers.size === 1) {
+        panStart = { x: e.clientX - tx, y: e.clientY - ty };
+      }
+    });
+    viewport.addEventListener('pointermove', (e) => {
+      if (!pointers.has(e.pointerId)) return;
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pointers.size === 2) {
+        const [p1, p2] = [...pointers.values()];
+        const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+        if (pinchStartDist > 0) scale = pinchStartScale * (dist / pinchStartDist);
+        clamp();
+        apply();
+      } else if (pointers.size === 1 && scale > 1 && panStart) {
+        tx = e.clientX - panStart.x;
+        ty = e.clientY - panStart.y;
+        apply();
+      }
+    });
+    function endPointer(e) {
+      const wasSingleTap = pointers.size === 1 && panStart
+        && Math.abs(e.clientX - (panStart.x + tx)) < 6
+        && Math.abs(e.clientY - (panStart.y + ty)) < 6;
+      pointers.delete(e.pointerId);
+      if (pointers.size < 2) pinchStartDist = 0;
+      if (pointers.size === 0) {
+        panStart = null;
+        if (wasSingleTap) {
+          const now = Date.now();
+          if (now - lastTapTime < 300) toggleZoom();
+          lastTapTime = now;
+        }
+      }
+    }
+    viewport.addEventListener('pointerup', endPointer);
+    viewport.addEventListener('pointercancel', endPointer);
+
+    backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
+    backdrop.querySelector('#zoom-close').addEventListener('click', close);
+    function close() { backdrop.remove(); }
   }
 
   // Pointer-driven carousel (no native overflow-x scroll) so a normal mouse
@@ -160,7 +267,9 @@
     const dotsEl = document.getElementById('gallery-dots');
     let index = 0;
     let dragging = false;
+    let directionDecided = false;
     let dragStartX = 0;
+    let dragStartY = 0;
     let dragDeltaX = 0;
 
     for (let i = 0; i < count; i++) {
@@ -172,30 +281,49 @@
 
     function goTo(i) {
       index = Math.max(0, Math.min(count - 1, i));
+      currentSlideIndex = index;
       track.style.transition = 'transform 0.3s ease';
       track.style.transform = `translateX(-${index * 100}%)`;
       dotsEl.querySelectorAll('.dot').forEach((d, i2) => d.classList.toggle('active', i2 === index));
     }
 
     track.addEventListener('pointerdown', (e) => {
-      dragging = true;
       dragStartX = e.clientX;
+      dragStartY = e.clientY;
       dragDeltaX = 0;
-      track.style.transition = 'none';
-      track.style.cursor = 'grabbing';
-      track.setPointerCapture(e.pointerId);
+      dragging = false;
+      directionDecided = false;
     });
+    // Direction is decided only once the gesture has moved a few pixels —
+    // capturing the pointer immediately on pointerdown (the previous
+    // approach) hijacked every touch, including a plain vertical scroll,
+    // before the browser could tell it apart from a horizontal swipe.
     track.addEventListener('pointermove', (e) => {
+      if (directionDecided && !dragging) return;
+      const deltaX = e.clientX - dragStartX;
+      const deltaY = e.clientY - dragStartY;
+      if (!directionDecided) {
+        if (Math.abs(deltaX) < 8 && Math.abs(deltaY) < 8) return;
+        directionDecided = true;
+        if (Math.abs(deltaX) <= Math.abs(deltaY)) return; // vertical — let native scroll handle it
+        dragging = true;
+        track.style.transition = 'none';
+        track.style.cursor = 'grabbing';
+        try { track.setPointerCapture(e.pointerId); } catch (err) { /* pointer already released — ignore */ }
+      }
       if (!dragging) return;
-      dragDeltaX = e.clientX - dragStartX;
+      dragDeltaX = deltaX;
       track.style.transform = `translateX(calc(-${index * 100}% + ${dragDeltaX}px))`;
     });
     function endDrag() {
-      if (!dragging) return;
-      dragging = false;
-      if (dragDeltaX < -50 && index < count - 1) goTo(index + 1);
-      else if (dragDeltaX > 50 && index > 0) goTo(index - 1);
-      else goTo(index);
+      if (dragging) {
+        dragging = false;
+        track.style.cursor = 'grab';
+        if (dragDeltaX < -50 && index < count - 1) goTo(index + 1);
+        else if (dragDeltaX > 50 && index > 0) goTo(index - 1);
+        else goTo(index);
+      }
+      directionDecided = false;
     }
     track.addEventListener('pointerup', endDrag);
     track.addEventListener('pointercancel', endDrag);

@@ -434,7 +434,9 @@ const Shop = (() => {
       const dotsEl = backdrop.querySelector('#qv-dots');
       let index = 0;
       let dragging = false;
+      let directionDecided = false;
       let dragStartX = 0;
+      let dragStartY = 0;
       let dragDeltaX = 0;
 
       images.forEach((_, i) => {
@@ -452,25 +454,41 @@ const Shop = (() => {
       }
 
       track.addEventListener('pointerdown', (e) => {
-        dragging = true;
         dragStartX = e.clientX;
+        dragStartY = e.clientY;
         dragDeltaX = 0;
-        track.style.transition = 'none';
-        track.style.cursor = 'grabbing';
-        track.setPointerCapture(e.pointerId);
+        dragging = false;
+        directionDecided = false;
       });
+      // Direction is decided only once the gesture has moved a few pixels —
+      // capturing the pointer immediately on pointerdown hijacked every
+      // touch, including a plain vertical scroll inside the modal.
       track.addEventListener('pointermove', (e) => {
+        if (directionDecided && !dragging) return;
+        const deltaX = e.clientX - dragStartX;
+        const deltaY = e.clientY - dragStartY;
+        if (!directionDecided) {
+          if (Math.abs(deltaX) < 8 && Math.abs(deltaY) < 8) return;
+          directionDecided = true;
+          if (Math.abs(deltaX) <= Math.abs(deltaY)) return;
+          dragging = true;
+          track.style.transition = 'none';
+          track.style.cursor = 'grabbing';
+          try { track.setPointerCapture(e.pointerId); } catch (err) { /* pointer already released — ignore */ }
+        }
         if (!dragging) return;
-        dragDeltaX = e.clientX - dragStartX;
+        dragDeltaX = deltaX;
         track.style.transform = `translateX(calc(-${index * 100}% + ${dragDeltaX}px))`;
       });
       function endDrag() {
-        if (!dragging) return;
-        dragging = false;
-        track.style.cursor = 'grab';
-        if (dragDeltaX < -50 && index < images.length - 1) goTo(index + 1);
-        else if (dragDeltaX > 50 && index > 0) goTo(index - 1);
-        else goTo(index);
+        if (dragging) {
+          dragging = false;
+          track.style.cursor = 'grab';
+          if (dragDeltaX < -50 && index < images.length - 1) goTo(index + 1);
+          else if (dragDeltaX > 50 && index > 0) goTo(index - 1);
+          else goTo(index);
+        }
+        directionDecided = false;
       }
       track.addEventListener('pointerup', endDrag);
       track.addEventListener('pointercancel', endDrag);
