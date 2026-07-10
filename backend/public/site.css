@@ -45,11 +45,22 @@ nav.site-nav .links a {
   opacity: 0.9;
 }
 nav.site-nav .links a:hover { opacity: 1; text-decoration: none; }
-nav.site-nav .links a.admin-link {
+nav.site-nav .links a.admin-link,
+nav.site-nav .links button.admin-link {
   border: 1px solid var(--surface);
   padding: 5px 12px;
   border-radius: 6px;
 }
+nav.site-nav .links button.admin-link {
+  background: transparent;
+  color: var(--surface);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  opacity: 0.9;
+}
+nav.site-nav .links button.admin-link:hover { opacity: 1; }
 
 main.site-main {
   max-width: 860px;

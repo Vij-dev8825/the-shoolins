@@ -14,7 +14,9 @@
     <a href="/">Home</a>
     <a href="/about.html">About</a>
     <a href="/contact.html">Contact</a>
-    <a href="/admin/" class="admin-link">Admin</a>
+    <a href="/admin/" id="nav-products" class="admin-link" style="display:none">Products</a>
+    <a href="/admin/" id="nav-admin" class="admin-link">Admin</a>
+    <button id="nav-logout" class="admin-link" style="display:none">Logout</button>
   </div>
 </nav>
 
@@ -42,5 +44,6 @@
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
 </script>
+<script src="/site-nav.js"></script>
 </body>
 </html>
