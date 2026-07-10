@@ -49,6 +49,9 @@ Seed data (6 products, ids are strings "1".."6", prices are INR):
 ## Enquiries (bulk/wholesale leads)
 - `POST /enquiries` body `{ name, email, phone, company?, productInterest?, quantity?, message? }` -> `201 { id, received: true }`. Public, no auth — a prospective bulk buyer may not have an account. Listed only via `GET /admin/enquiries` (admin auth required).
 
+## Newsletter (footer signup)
+- `POST /newsletter` body `{ email }` -> `201 { subscribed: true }`. Public, no auth. Idempotent — resubmitting an already-subscribed email is a no-op, not an error.
+
 ## Admin (product management)
 A minimal password-protected web UI lives at `/admin` (static page, not under `/api`). It calls these endpoints:
 - `POST /admin/login` body `{ password }` -> `200 { token }` (checked against `ADMIN_PASSWORD` env var) or `401`. Token carries `{ role: "admin" }`, expires in 12h.

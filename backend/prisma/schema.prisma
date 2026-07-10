@@ -117,3 +117,11 @@ model Enquiry {
   message          String?  @db.Text
   createdAt        DateTime @default(now())
 }
+
+// Footer newsletter signup. No auth required to submit; email is unique so
+// resubmitting the same address is a no-op instead of an error.
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}

@@ -185,6 +185,102 @@ const Shop = (() => {
 
   function updateNavAuthState() { renderNav(); }
 
+  // ---------- Footer (rich multi-column footer + scroll-to-top, shared across all pages) ----------
+  function renderFooter() {
+    const mount = document.getElementById('shop-footer-mount');
+    if (!mount) return;
+    const year = new Date().getFullYear();
+
+    mount.innerHTML = `
+      <footer class="site-footer-premium">
+        <div class="footer-main">
+          <div class="footer-col">
+            <p class="footer-brand-name">THE SHOOLINS</p>
+            <div class="footer-contact-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.5-7-11a7 7 0 1 1 14 0c0 4.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+              <span>Coimbatore, Tamil Nadu, India</span>
+            </div>
+            <div class="footer-contact-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+              <span>hello@theshoolins.example</span>
+            </div>
+            <div class="footer-contact-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <span>+91 00000 00000</span>
+            </div>
+          </div>
+          <div class="footer-col">
+            <h4>Categories</h4>
+            <a href="/shop.html">Shop All</a>
+            <a href="/shop.html?category=women">Women</a>
+            <a href="/shop.html?category=men">Men</a>
+            <a href="/combos.html">Combos</a>
+          </div>
+          <div class="footer-col">
+            <h4>Information</h4>
+            <a href="/about.html">About Us</a>
+            <a href="/privacy-policy.html">Privacy Policy</a>
+            <a href="/refund-policy.html">Refund Policy</a>
+            <a href="/shipping-policy.html">Shipping Policy</a>
+            <a href="/terms-of-service.html">Terms of Service</a>
+          </div>
+          <div class="footer-col">
+            <h4>Useful Links</h4>
+            <a href="/">Home</a>
+            <a href="/reviews.html">Reviews</a>
+            <a href="/bulk-enquiry.html">Bulk Enquiry</a>
+            <a href="/contact.html">Contact Us</a>
+          </div>
+          <div class="footer-col footer-newsletter">
+            <h4>Newsletter Signup</h4>
+            <p>Subscribe for updates on new arrivals and offers.</p>
+            <div class="footer-newsletter-row">
+              <input type="email" id="footer-newsletter-email" placeholder="Your email address" />
+              <button class="btn btn-gold shine" id="footer-newsletter-btn">Subscribe</button>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p style="margin:0">&copy; ${year} The Shoolins. <span data-i18n="footerRights">All rights reserved.</span></p>
+          <div class="footer-bottom-links">
+            <a href="/privacy-policy.html">Privacy Policy</a>
+            <a href="/refund-policy.html">Refund Policy</a>
+            <a href="/shipping-policy.html">Shipping Policy</a>
+            <a href="/terms-of-service.html">Terms of Service</a>
+            <a href="/contact.html">Contact Us</a>
+          </div>
+        </div>
+      </footer>
+      <button class="scroll-top-btn" id="scroll-top-btn" title="Back to top">&uarr;</button>
+    `;
+
+    if (typeof I18N !== 'undefined') I18N.apply(mount);
+
+    const emailInput = mount.querySelector('#footer-newsletter-email');
+    mount.querySelector('#footer-newsletter-btn').addEventListener('click', async () => {
+      const email = emailInput.value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        toast('Enter a valid email address.');
+        return;
+      }
+      try {
+        await apiFetch('/newsletter', { method: 'POST', body: JSON.stringify({ email }) });
+        toast('Thanks for subscribing!');
+        emailInput.value = '';
+      } catch (e) {
+        toast(e.message);
+      }
+    });
+
+    const scrollBtn = mount.querySelector('#scroll-top-btn');
+    window.addEventListener('scroll', () => {
+      scrollBtn.classList.toggle('visible', window.scrollY > 400);
+    });
+    scrollBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
   function requireLogin(redirectMessage) {
     if (!isLoggedIn()) {
       const next = window.location.pathname + window.location.search;
@@ -432,7 +528,7 @@ const Shop = (() => {
   return {
     getToken, getUser, setSession, clearSession, isLoggedIn,
     apiFetch, formatInr, imageSrc, productImages, attachHoverScrub, toast,
-    renderNav, updateNavAuthState, refreshCartCount, requireLogin, showPaymentSheet,
+    renderNav, updateNavAuthState, renderFooter, refreshCartCount, requireLogin, showPaymentSheet,
     showQuickView,
   };
 })();

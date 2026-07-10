@@ -8,6 +8,7 @@ const orderRoutes = require("./routes/orders");
 const wishlistRoutes = require("./routes/wishlist");
 const reviewRoutes = require("./routes/reviews");
 const enquiryRoutes = require("./routes/enquiries");
+const newsletterRoutes = require("./routes/newsletter");
 const adminRoutes = require("./routes/admin");
 const { notFoundHandler, errorHandler } = require("./middleware/errorHandler");
 
@@ -30,6 +31,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/enquiries", enquiryRoutes);
+app.use("/api/newsletter", newsletterRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.use(notFoundHandler);

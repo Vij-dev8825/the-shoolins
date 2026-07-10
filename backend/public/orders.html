@@ -37,15 +37,13 @@
   <p class="muted">Loading…</p>
 </main>
 
-<footer class="site-footer">
-  &copy; <span id="year"></span> The Shoolins. <span data-i18n="footerRights">All rights reserved.</span>
-</footer>
+<div id="shop-footer-mount"></div>
 
 <script src="/i18n.js"></script>
 <script src="/shop.js"></script>
 <script>
-  document.getElementById('year').textContent = new Date().getFullYear();
   Shop.renderNav('orders');
+  Shop.renderFooter();
   I18N.apply();
 
   function shortRef(id) { return id.slice(-7).toUpperCase(); }
