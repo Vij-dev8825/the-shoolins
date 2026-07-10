@@ -297,7 +297,15 @@ const Shop = (() => {
                 <button class="btn btn-gold shine" id="qv-add-btn" style="flex:1">Add to Cart</button>
                 <button class="qv-wish-btn ${wished ? 'active' : ''}" id="qv-wish-btn">${wished ? '&#10084;' : '&#9825;'}</button>
               </div>
-              <a href="/product.html?id=${encodeURIComponent(product.id)}" class="muted" style="margin-top:16px;font-size:13px;text-align:center;text-decoration:none">View full details &rarr;</a>
+              <button class="btn btn-outline" id="qv-buy-btn" style="margin-top:10px">Buy Now</button>
+              <div class="qv-pay-row">
+                <span class="pay-chip">UPI</span>
+                <span class="pay-chip">VISA</span>
+                <span class="pay-chip">Mastercard</span>
+                <span class="pay-chip">RuPay</span>
+                <span class="pay-chip">Net Banking</span>
+              </div>
+              <a href="/product.html?id=${encodeURIComponent(product.id)}" class="muted" style="margin-top:14px;font-size:13px;text-align:center;text-decoration:none">View full details &rarr;</a>
             </div>
           </div>
         </div>
@@ -329,6 +337,21 @@ const Shop = (() => {
           toast(`${product.name} added to cart`);
           refreshCartCount();
           close();
+        } catch (e) { toast(e.message); }
+      });
+      backdrop.querySelector('#qv-buy-btn').addEventListener('click', async () => {
+        if (!requireLogin()) return;
+        try {
+          await apiFetch('/cart', { method: 'POST', body: JSON.stringify({ productId: product.id, quantity }) });
+          const cart = await apiFetch('/cart');
+          const amount = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+          const paid = await showPaymentSheet(amount);
+          if (!paid) return;
+          await apiFetch('/orders/checkout', { method: 'POST' });
+          refreshCartCount();
+          toast('Order placed successfully!');
+          close();
+          window.location.href = '/orders.html';
         } catch (e) { toast(e.message); }
       });
       backdrop.querySelector('#qv-wish-btn').addEventListener('click', async () => {

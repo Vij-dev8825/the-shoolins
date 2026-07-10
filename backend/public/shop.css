@@ -550,6 +550,12 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outl
   flex-shrink: 0;
 }
 .qv-wish-btn.active { color: var(--error); border-color: var(--error); }
+.qv-pay-row { display: flex; align-items: center; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+.pay-chip {
+  display: flex; align-items: center; justify-content: center;
+  height: 24px; padding: 0 9px; border-radius: 5px; border: 1px solid var(--divider);
+  background: var(--surface); font-size: 10px; font-weight: 700; letter-spacing: 0.4px; color: var(--muted);
+}
 .pay-success-icon {
   width: 64px; height: 64px; border-radius: 50%; background: var(--success);
   color: white; display: flex; align-items: center; justify-content: center;
