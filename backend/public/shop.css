@@ -493,6 +493,13 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outl
   animation: sheet-up 0.28s ease both;
   max-height: 88vh;
   overflow-y: auto;
+  position: relative;
+}
+.modal-close-btn {
+  position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border-radius: 50%;
+  background: var(--surface); border: none; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 20px; line-height: 1; color: var(--muted); z-index: 3;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.18);
 }
 @media (min-width: 620px) {
   .modal-backdrop { align-items: center; }
@@ -525,13 +532,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outl
   animation: spin 0.8s linear infinite; margin: 0 auto;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-.modal-sheet.quickview { max-width: 700px; padding: 0; overflow: hidden; position: relative; }
-.qv-close {
-  position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border-radius: 50%;
-  background: var(--surface); border: none; display: flex; align-items: center; justify-content: center;
-  cursor: pointer; font-size: 20px; line-height: 1; color: var(--muted); z-index: 3;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.18);
-}
+.modal-sheet.quickview { max-width: 700px; padding: 0; overflow: hidden; }
 .qv-body { display: grid; grid-template-columns: 1fr 1fr; }
 @media (max-width: 640px) { .qv-body { grid-template-columns: 1fr; } }
 .qv-image { position: relative; aspect-ratio: 0.85; background: var(--divider); overflow: hidden; }
@@ -550,11 +551,12 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outl
   flex-shrink: 0;
 }
 .qv-wish-btn.active { color: var(--error); border-color: var(--error); }
-.qv-pay-row { display: flex; align-items: center; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+.qv-pay-row { display: flex; align-items: center; gap: 6px; margin-top: 16px; flex-wrap: wrap; }
 .pay-chip {
   display: flex; align-items: center; justify-content: center;
-  height: 24px; padding: 0 9px; border-radius: 5px; border: 1px solid var(--divider);
-  background: var(--surface); font-size: 10px; font-weight: 700; letter-spacing: 0.4px; color: var(--muted);
+  height: 22px; padding: 0 7px; border-radius: 5px; border: 1px solid var(--divider);
+  background: var(--surface); font-size: 9px; font-weight: 700; letter-spacing: 0.3px; color: var(--muted);
+  white-space: nowrap;
 }
 .pay-success-icon {
   width: 64px; height: 64px; border-radius: 50%; background: var(--success);

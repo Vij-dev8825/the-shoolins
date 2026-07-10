@@ -202,10 +202,18 @@ const Shop = (() => {
         { key: 'wallet', label: 'Wallet', icon: '&#128176;' },
       ];
       let selected = 'upi';
+      let cancellable = true;
+      backdrop.addEventListener('click', (e) => {
+        if (e.target === backdrop && cancellable) {
+          backdrop.remove();
+          resolve(false);
+        }
+      });
 
       function renderMethodStep() {
         backdrop.innerHTML = `
           <div class="modal-sheet">
+            <button class="modal-close-btn" id="pay-close">&times;</button>
             <div class="modal-handle"></div>
             <h2 style="margin:0 0 4px;font-size:18px;display:flex;align-items:center;gap:8px">
               <span>&#128274;</span> Secure Checkout
@@ -214,6 +222,7 @@ const Shop = (() => {
             <p class="serif" style="font-size:30px;font-weight:700;color:var(--gold-dark);margin:0 0 20px">${formatInr(amount)}</p>
             <div id="method-list"></div>
             <button class="btn btn-gold btn-block shine" id="pay-btn" style="margin-top:14px">Pay ${formatInr(amount)}</button>
+            <button class="btn btn-outline btn-block" id="pay-cancel-btn" style="margin-top:10px">Cancel</button>
           </div>
         `;
         const list = backdrop.querySelector('#method-list');
@@ -225,9 +234,13 @@ const Shop = (() => {
           list.appendChild(tile);
         });
         backdrop.querySelector('#pay-btn').addEventListener('click', renderProcessingStep);
+        function cancel() { backdrop.remove(); resolve(false); }
+        backdrop.querySelector('#pay-close').addEventListener('click', cancel);
+        backdrop.querySelector('#pay-cancel-btn').addEventListener('click', cancel);
       }
 
       function renderProcessingStep() {
+        cancellable = false;
         backdrop.innerHTML = `
           <div class="modal-sheet" style="text-align:center;padding:48px 26px">
             <div class="pay-spinner"></div>
@@ -278,7 +291,7 @@ const Shop = (() => {
     function render() {
       backdrop.innerHTML = `
         <div class="modal-sheet quickview">
-          <button class="qv-close" id="qv-close">&times;</button>
+          <button class="modal-close-btn" id="qv-close">&times;</button>
           <div class="qv-body">
             <div class="qv-image">
               <img src="${images[index]}" alt="${product.name}" />
