@@ -115,9 +115,7 @@
         <div class="pd-gallery">
           <button class="pd-wish-btn ${wished ? 'active' : ''}" id="wish-btn">${wished ? '&#10084;' : '&#9825;'}</button>
           <button class="pd-zoom-btn" id="zoom-btn" title="Zoom"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg></button>
-          <div class="slides-track" id="slides-track">
-            ${images.map((src) => `<img src="${src}" alt="${product.name}" draggable="false" />`).join('')}
-          </div>
+          <div class="slides-track" id="slides-track"></div>
         </div>
         <div>
           <span class="eyebrow" style="text-transform:uppercase;color:var(--gold-dark);font-size:12px;font-weight:700;letter-spacing:1.5px">${product.category}</span>
@@ -143,6 +141,19 @@
       </div>
       ${images.length > 1 ? `<div class="gallery-dots" id="gallery-dots"></div>` : ''}
     `;
+
+    // Images are set as a property after insertion, not interpolated into
+    // the innerHTML string above — some mobile browsers are unreliable
+    // parsing very long data: URI attributes embedded in bulk-assigned HTML,
+    // especially with several large photos in the same block.
+    const slidesTrack = document.getElementById('slides-track');
+    images.forEach((src) => {
+      const imgEl = document.createElement('img');
+      imgEl.alt = product.name;
+      imgEl.draggable = false;
+      imgEl.src = src;
+      slidesTrack.appendChild(imgEl);
+    });
 
     const sizeRow = document.getElementById('size-row');
     SIZES.forEach((s) => {

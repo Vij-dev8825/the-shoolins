@@ -411,9 +411,7 @@ const Shop = (() => {
         <button class="modal-close-btn" id="qv-close">&times;</button>
         <div class="qv-body">
           <div class="qv-image">
-            <div class="qv-slides-track" id="qv-slides-track">
-              ${images.map((src) => `<img src="${src}" alt="${product.name}" draggable="false" />`).join('')}
-            </div>
+            <div class="qv-slides-track" id="qv-slides-track"></div>
             ${images.length > 1 ? `<div class="gallery-dots" id="qv-dots"></div>` : ''}
           </div>
           <div class="qv-details">
@@ -444,6 +442,19 @@ const Shop = (() => {
     `;
 
     document.body.appendChild(backdrop);
+
+    // Images are set as a property after insertion, not interpolated into
+    // the innerHTML string above — some mobile browsers are unreliable
+    // parsing very long data: URI attributes embedded in bulk-assigned HTML,
+    // especially with several large photos in the same block.
+    const qvTrack = backdrop.querySelector('#qv-slides-track');
+    images.forEach((src) => {
+      const imgEl = document.createElement('img');
+      imgEl.alt = product.name;
+      imgEl.draggable = false;
+      imgEl.src = src;
+      qvTrack.appendChild(imgEl);
+    });
     markBrokenImagesWithFallback(backdrop);
 
     // Pointer-driven carousel (matches the product detail page's gallery) so
