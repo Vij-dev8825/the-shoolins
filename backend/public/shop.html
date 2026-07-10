@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Shop — The Shoolins</title>
+<link rel="stylesheet" href="/shop.css" />
+</head>
+<body>
+
+<div id="shop-nav-mount"></div>
+
+<div class="page-banner">
+  <h1>Shop The Collection</h1>
+  <p>Considered essentials, for every day</p>
+</div>
+
+<main class="shop-main">
+  <div class="filters-bar">
+    <div class="chip-row" id="category-chips">
+      <span class="chip active" data-category="">All</span>
+      <span class="chip" data-category="women">Women</span>
+      <span class="chip" data-category="men">Men</span>
+    </div>
+    <input type="search" id="search-input" placeholder="Search products…" />
+    <select id="sort-select">
+      <option value="">Sort: Featured</option>
+      <option value="price_asc">Price: Low to High</option>
+      <option value="price_desc">Price: High to Low</option>
+      <option value="name_asc">Name: A to Z</option>
+    </select>
+  </div>
+
+  <div class="product-grid" id="product-grid">
+    <p class="muted">Loading…</p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  &copy; <span id="year"></span> The Shoolins. All rights reserved.
+</footer>
+
+<script src="/shop.js"></script>
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+  Shop.renderNav('shop');
+
+  const params = new URLSearchParams(window.location.search);
+  let state = {
+    category: params.get('category') || '',
+    q: '',
+    sort: '',
+  };
+  let wishlistIds = new Set();
+
+  document.querySelectorAll('#category-chips .chip').forEach((chip) => {
+    if (chip.dataset.category === state.category) chip.classList.add('active');
+    else chip.classList.remove('active');
+    chip.addEventListener('click', () => {
+      state.category = chip.dataset.category;
+      document.querySelectorAll('#category-chips .chip').forEach((c) => c.classList.toggle('active', c === chip));
+      loadProducts();
+    });
+  });
+
+  let searchDebounce;
+  document.getElementById('search-input').addEventListener('input', (e) => {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => {
+      state.q = e.target.value.trim();
+      loadProducts();
+    }, 300);
+  });
+
+  document.getElementById('sort-select').addEventListener('change', (e) => {
+    state.sort = e.target.value;
+    loadProducts();
+  });
+
+  async function loadWishlist() {
+    if (!Shop.isLoggedIn()) { wishlistIds = new Set(); return; }
+    try {
+      const items = await Shop.apiFetch('/wishlist');
+      wishlistIds = new Set(items.map((i) => i.productId));
+    } catch (e) { /* ignore */ }
+  }
+
+  async function toggleWishlist(product, btn) {
+    if (!Shop.isLoggedIn()) {
+      window.location.href = `/login.html?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+      return;
+    }
+    const wished = wishlistIds.has(product.id);
+    try {
+      if (wished) {
+        await Shop.apiFetch(`/wishlist/${product.id}`, { method: 'DELETE' });
+        wishlistIds.delete(product.id);
+      } else {
+        await Shop.apiFetch('/wishlist', { method: 'POST', body: JSON.stringify({ productId: product.id }) });
+        wishlistIds.add(product.id);
+      }
+      btn.classList.toggle('active', wishlistIds.has(product.id));
+      btn.innerHTML = wishlistIds.has(product.id) ? '&#10084;' : '&#9825;';
+    } catch (e) {
+      Shop.toast(e.message);
+    }
+  }
+
+  function renderProductCard(p) {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    const wished = wishlistIds.has(p.id);
+    card.innerHTML = `
+      <div class="thumb-wrap">
+        <img src="${Shop.imageSrc(p)}" alt="${p.name}" loading="lazy" />
+        <span class="category-tag">${p.category}</span>
+        <button class="wish-btn ${wished ? 'active' : ''}">${wished ? '&#10084;' : '&#9825;'}</button>
+      </div>
+      <div class="info">
+        <div class="name">${p.name}</div>
+        <div class="price">${Shop.formatInr(p.price)}</div>
+      </div>
+    `;
+    card.querySelector('.thumb-wrap img').addEventListener('click', () => goToProduct(p.id));
+    card.querySelector('.info').addEventListener('click', () => goToProduct(p.id));
+    card.querySelector('.wish-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleWishlist(p, e.currentTarget);
+    });
+    return card;
+  }
+
+  function goToProduct(id) { window.location.href = `/product.html?id=${encodeURIComponent(id)}`; }
+
+  async function loadProducts() {
+    const grid = document.getElementById('product-grid');
+    grid.innerHTML = '<p class="muted">Loading…</p>';
+    try {
+      const qs = new URLSearchParams();
+      if (state.category) qs.set('category', state.category);
+      if (state.q) qs.set('q', state.q);
+      if (state.sort) qs.set('sort', state.sort);
+      const products = await Shop.apiFetch(`/products?${qs.toString()}`);
+      if (!products.length) {
+        grid.innerHTML = '<div class="empty-state"><div class="icon">&#128269;</div><p>No products match your filters.</p></div>';
+        return;
+      }
+      grid.innerHTML = '';
+      products.forEach((p) => grid.appendChild(renderProductCard(p)));
+    } catch (e) {
+      grid.innerHTML = `<p class="muted">Could not load products: ${e.message}</p>`;
+    }
+  }
+
+  (async () => {
+    await loadWishlist();
+    await loadProducts();
+  })();
+</script>
+</body>
+</html>

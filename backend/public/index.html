@@ -4,21 +4,11 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>The Shoolins</title>
-<link rel="stylesheet" href="/site.css" />
+<link rel="stylesheet" href="/shop.css" />
 </head>
 <body>
 
-<nav class="site-nav">
-  <span class="brand">THE SHOOLINS</span>
-  <div class="links">
-    <a href="/">Home</a>
-    <a href="/about.html">About</a>
-    <a href="/contact.html">Contact</a>
-    <a href="/admin/" id="nav-products" class="admin-link shine" style="display:none">Products</a>
-    <a href="/admin/" id="nav-admin" class="admin-link shine">Admin</a>
-    <button id="nav-logout" class="admin-link" style="display:none">Logout</button>
-  </div>
-</nav>
+<div id="shop-nav-mount"></div>
 
 <div class="hero-video">
   <video autoplay muted loop playsinline>
@@ -26,28 +16,34 @@
   </video>
   <div class="hero-overlay"></div>
   <div class="hero-content">
-    <span class="eyebrow">New Season</span>
+    <span class="eyebrow-badge">New Season</span>
     <h1>THE SHOOLIN'S</h1>
     <p class="tagline">ELEVATE THE ELEGANCE WITHIN</p>
-    <a href="/about.html" class="btn btn-primary shine">Discover The Collection</a>
+    <a href="/shop.html" class="btn btn-gold shine">Shop The Collection</a>
   </div>
 </div>
 
-<main class="site-main">
-  <div class="grid-two">
-    <div class="card">
+<main class="shop-main">
+  <div class="grid-two" style="margin-bottom:48px">
+    <a href="/shop.html?category=women" class="card" style="text-decoration:none">
       <h2>For Women</h2>
       <p class="muted">Considered essentials in quiet colours — dresses, skirts, and blouses designed to layer effortlessly, season to season.</p>
-    </div>
-    <div class="card">
+    </a>
+    <a href="/shop.html?category=men" class="card" style="text-decoration:none">
       <h2>For Men</h2>
       <p class="muted">Tailored from durable, breathable fabric with a clean, considered fit — built for everyday wear that holds its shape.</p>
-    </div>
+    </a>
   </div>
 
-  <div class="card">
-    <h2>The Shoolins App</h2>
-    <p>Browse our full collection, save favourites to your wishlist, and check out securely — all from the The Shoolins mobile app.</p>
+  <div class="section-title">
+    <div>
+      <span class="eyebrow">Handpicked</span>
+      <h2>Featured Pieces</h2>
+    </div>
+    <a href="/shop.html">View all &rarr;</a>
+  </div>
+  <div class="product-grid" id="featured-grid">
+    <p class="muted">Loading…</p>
   </div>
 </main>
 
@@ -55,9 +51,47 @@
   &copy; <span id="year"></span> The Shoolins. All rights reserved.
 </footer>
 
+<script src="/shop.js"></script>
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
+  Shop.renderNav('home');
+
+  async function loadFeatured() {
+    const grid = document.getElementById('featured-grid');
+    try {
+      const products = await Shop.apiFetch('/products');
+      const featured = products.slice(0, 4);
+      if (!featured.length) {
+        grid.innerHTML = '<p class="muted">No products yet.</p>';
+        return;
+      }
+      grid.innerHTML = '';
+      featured.forEach((p) => grid.appendChild(renderProductCard(p)));
+    } catch (e) {
+      grid.innerHTML = `<p class="muted">Could not load products: ${e.message}</p>`;
+    }
+  }
+
+  function renderProductCard(p) {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    card.innerHTML = `
+      <div class="thumb-wrap">
+        <img src="${Shop.imageSrc(p)}" alt="${p.name}" loading="lazy" />
+        <span class="category-tag">${p.category}</span>
+      </div>
+      <div class="info">
+        <div class="name">${p.name}</div>
+        <div class="price">${Shop.formatInr(p.price)}</div>
+      </div>
+    `;
+    card.addEventListener('click', () => {
+      window.location.href = `/product.html?id=${encodeURIComponent(p.id)}`;
+    });
+    return card;
+  }
+
+  loadFeatured();
 </script>
-<script src="/site-nav.js"></script>
 </body>
 </html>

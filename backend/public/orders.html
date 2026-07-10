@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>My Orders — The Shoolins</title>
+<link rel="stylesheet" href="/shop.css" />
+<style>
+  .order-card { margin-bottom: 20px; overflow: hidden; padding: 0; }
+  .order-card .strip { height: 4px; background: linear-gradient(120deg, var(--gold-light), var(--gold-dark)); }
+  .order-card .body { padding: 22px; }
+  .order-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .order-head .ref { font-family: 'Playfair Display', serif; font-size: 17px; }
+  .order-head .ref .code { color: var(--gold-dark); }
+  .confirmed-chip {
+    display: inline-flex; align-items: center; gap: 4px; background: rgba(47,107,79,0.12);
+    color: var(--success); font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+    padding: 4px 10px; border-radius: 999px;
+  }
+  .order-thumbs { display: flex; gap: 8px; margin: 14px 0; }
+  .order-thumbs img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 2px solid var(--surface); box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+  .order-total-row { display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--divider); padding-top: 12px; margin-top: 8px; }
+  .order-total-row .label { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; }
+  .order-total-row .amount { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--gold-dark); }
+</style>
+</head>
+<body>
+
+<div id="shop-nav-mount"></div>
+
+<div class="page-banner">
+  <h1>My Orders</h1>
+  <p>Your past purchases</p>
+</div>
+
+<main class="shop-main narrow" id="orders-root">
+  <p class="muted">Loading…</p>
+</main>
+
+<footer class="site-footer">
+  &copy; <span id="year"></span> The Shoolins. All rights reserved.
+</footer>
+
+<script src="/shop.js"></script>
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+  Shop.renderNav('orders');
+
+  function shortRef(id) { return id.slice(-7).toUpperCase(); }
+  function formatDate(iso) {
+    const d = new Date(iso);
+    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+  }
+
+  async function loadOrders() {
+    const root = document.getElementById('orders-root');
+    if (!Shop.isLoggedIn()) {
+      root.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">&#128220;</div>
+          <p>Log in to view your orders.</p>
+          <a href="/login.html?next=/orders.html" class="btn btn-navy shine" style="margin-top:10px">Log In</a>
+        </div>`;
+      return;
+    }
+    try {
+      const orders = await Shop.apiFetch('/orders');
+      if (!orders.length) {
+        root.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">&#128220;</div>
+            <p>No orders yet.</p>
+            <a href="/shop.html" class="btn btn-navy shine" style="margin-top:10px">Start Shopping</a>
+          </div>`;
+        return;
+      }
+      root.innerHTML = '';
+      orders.forEach((order) => root.appendChild(renderOrder(order)));
+    } catch (e) {
+      root.innerHTML = `<p class="muted">Could not load orders: ${e.message}</p>`;
+    }
+  }
+
+  function renderOrder(order) {
+    const itemCount = order.items.reduce((sum, i) => sum + i.quantity, 0);
+    const visible = order.items.slice(0, 4);
+    const overflow = order.items.length - visible.length;
+    const el = document.createElement('div');
+    el.className = 'card order-card';
+    el.innerHTML = `
+      <div class="strip"></div>
+      <div class="body">
+        <div class="order-head">
+          <span class="ref">Order <span class="code">#${shortRef(order.id)}</span></span>
+          <span class="confirmed-chip">&#10003; CONFIRMED</span>
+        </div>
+        <p class="muted" style="margin:0">${formatDate(order.createdAt)} &middot; ${itemCount} item${itemCount === 1 ? '' : 's'}</p>
+        <div class="order-thumbs">
+          ${visible.map((i) => `<img src="${Shop.imageSrc(i)}" alt="${i.name}" />`).join('')}
+          ${overflow > 0 ? `<div style="width:56px;height:56px;border-radius:8px;background:var(--divider);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--gold-dark)">+${overflow}</div>` : ''}
+        </div>
+        <div class="order-total-row">
+          <span class="label">Total</span>
+          <span class="amount">${Shop.formatInr(order.total)}</span>
+        </div>
+      </div>
+    `;
+    return el;
+  }
+
+  loadOrders();
+</script>
+</body>
+</html>

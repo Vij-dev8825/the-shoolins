@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Login — The Shoolins</title>
+<link rel="stylesheet" href="/shop.css" />
+</head>
+<body>
+
+<div id="shop-nav-mount"></div>
+
+<main class="shop-main narrow">
+  <div class="card" style="max-width:420px;margin:40px auto">
+    <div style="text-align:center;margin-bottom:8px">
+      <span style="font-size:28px">&#9813;</span>
+    </div>
+    <h2 style="text-align:center">Welcome Back</h2>
+    <p class="muted" style="text-align:center;margin-top:-6px">Sign in with your mobile number</p>
+
+    <div id="step-mobile">
+      <label for="mobile">Mobile number</label>
+      <input id="mobile" type="tel" placeholder="10-digit mobile number" maxlength="10" />
+      <button class="btn btn-navy btn-block shine" id="request-otp-btn" style="margin-top:18px">Send OTP</button>
+    </div>
+
+    <div id="step-otp" style="display:none">
+      <p class="muted" id="otp-sent-to"></p>
+      <label for="otp">Enter OTP</label>
+      <input id="otp" type="text" inputmode="numeric" maxlength="6" placeholder="6-digit code" />
+      <p class="muted" id="dev-otp-hint" style="display:none"></p>
+      <button class="btn btn-gold btn-block shine" id="verify-otp-btn" style="margin-top:18px">Verify &amp; Continue</button>
+      <button class="btn btn-outline btn-block" id="change-number-btn" style="margin-top:10px">Use a different number</button>
+    </div>
+
+    <div id="step-name" style="display:none">
+      <p class="muted">One last thing — what's your name?</p>
+      <label for="fullname">Full name</label>
+      <input id="fullname" type="text" placeholder="Your name" />
+      <button class="btn btn-gold btn-block shine" id="save-name-btn" style="margin-top:18px">Continue</button>
+    </div>
+
+    <p class="muted" id="form-error" style="color:var(--error);display:none;margin-top:14px"></p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  &copy; <span id="year"></span> The Shoolins. All rights reserved.
+</footer>
+
+<script src="/shop.js"></script>
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+  Shop.renderNav('login');
+
+  const params = new URLSearchParams(window.location.search);
+  const nextUrl = params.get('next') || '/profile.html';
+  let mobile = '';
+  let pendingUser = null;
+  let pendingToken = null;
+
+  function showError(msg) {
+    const el = document.getElementById('form-error');
+    el.textContent = msg;
+    el.style.display = msg ? 'block' : 'none';
+  }
+
+  document.getElementById('request-otp-btn').addEventListener('click', async () => {
+    showError('');
+    mobile = document.getElementById('mobile').value.trim();
+    if (!/^\d{10}$/.test(mobile)) {
+      showError('Enter a valid 10-digit mobile number.');
+      return;
+    }
+    try {
+      const res = await Shop.apiFetch('/auth/otp/request', {
+        method: 'POST',
+        body: JSON.stringify({ mobile }),
+      });
+      document.getElementById('step-mobile').style.display = 'none';
+      document.getElementById('step-otp').style.display = 'block';
+      document.getElementById('otp-sent-to').textContent = `Code sent to +91 ${mobile}`;
+      if (res.devOtp) {
+        const hint = document.getElementById('dev-otp-hint');
+        hint.textContent = `Dev mode — your OTP is ${res.devOtp}`;
+        hint.style.display = 'block';
+      }
+    } catch (e) {
+      showError(e.message);
+    }
+  });
+
+  document.getElementById('change-number-btn').addEventListener('click', () => {
+    document.getElementById('step-otp').style.display = 'none';
+    document.getElementById('step-mobile').style.display = 'block';
+    showError('');
+  });
+
+  document.getElementById('verify-otp-btn').addEventListener('click', async () => {
+    showError('');
+    const otp = document.getElementById('otp').value.trim();
+    if (!otp) { showError('Enter the OTP.'); return; }
+    try {
+      const res = await Shop.apiFetch('/auth/otp/verify', {
+        method: 'POST',
+        body: JSON.stringify({ mobile, otp }),
+      });
+      pendingToken = res.token;
+      pendingUser = res.user;
+      if (res.isNewUser) {
+        document.getElementById('step-otp').style.display = 'none';
+        document.getElementById('step-name').style.display = 'block';
+      } else {
+        Shop.setSession(pendingToken, pendingUser);
+        Shop.toast('Welcome back!');
+        window.location.href = nextUrl;
+      }
+    } catch (e) {
+      showError(e.message);
+    }
+  });
+
+  document.getElementById('save-name-btn').addEventListener('click', async () => {
+    showError('');
+    const name = document.getElementById('fullname').value.trim();
+    if (!name) { showError('Please enter your name.'); return; }
+    try {
+      Shop.setSession(pendingToken, pendingUser);
+      const updated = await Shop.apiFetch('/auth/me', {
+        method: 'PATCH',
+        body: JSON.stringify({ name }),
+      });
+      Shop.setSession(pendingToken, updated);
+      Shop.toast('Welcome to The Shoolins!');
+      window.location.href = nextUrl;
+    } catch (e) {
+      showError(e.message);
+    }
+  });
+</script>
+</body>
+</html>

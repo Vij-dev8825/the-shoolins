@@ -4,28 +4,18 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>About — The Shoolins</title>
-<link rel="stylesheet" href="/site.css" />
+<link rel="stylesheet" href="/shop.css" />
 </head>
 <body>
 
-<nav class="site-nav">
-  <span class="brand">THE SHOOLINS</span>
-  <div class="links">
-    <a href="/">Home</a>
-    <a href="/about.html">About</a>
-    <a href="/contact.html">Contact</a>
-    <a href="/admin/" id="nav-products" class="admin-link shine" style="display:none">Products</a>
-    <a href="/admin/" id="nav-admin" class="admin-link shine">Admin</a>
-    <button id="nav-logout" class="admin-link" style="display:none">Logout</button>
-  </div>
-</nav>
+<div id="shop-nav-mount"></div>
 
 <div class="page-banner">
   <h1>About Us</h1>
   <p>The story behind The Shoolins</p>
 </div>
 
-<main class="site-main">
+<main class="shop-main narrow">
   <div class="card">
     <h2>About The Shoolins</h2>
     <p>
@@ -46,9 +36,10 @@
   &copy; <span id="year"></span> The Shoolins. All rights reserved.
 </footer>
 
+<script src="/shop.js"></script>
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
+  Shop.renderNav('about');
 </script>
-<script src="/site-nav.js"></script>
 </body>
 </html>

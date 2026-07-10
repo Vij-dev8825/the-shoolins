@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Product — The Shoolins</title>
+<link rel="stylesheet" href="/shop.css" />
+<style>
+  .pd-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+  @media (max-width: 760px) { .pd-wrap { grid-template-columns: 1fr; } }
+  .pd-gallery { position: relative; border-radius: 14px; overflow: hidden; background: var(--divider); aspect-ratio: 0.85; }
+  .pd-gallery .slides { display: flex; height: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .pd-gallery .slides::-webkit-scrollbar { display: none; }
+  .pd-gallery .slides img { flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover; scroll-snap-align: start; }
+  .pd-wish-btn {
+    position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; border-radius: 50%;
+    background: var(--surface); border: none; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.2); font-size: 17px; color: var(--muted); z-index: 2;
+  }
+  .pd-wish-btn.active { color: var(--error); }
+  .size-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .size-chip {
+    width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--divider); cursor: pointer; font-weight: 600; font-size: 13px;
+  }
+  .size-chip.selected { background: var(--navy); color: var(--gold-light); border-color: var(--navy); }
+  .qty-row { display: flex; align-items: center; gap: 16px; }
+  .qty-btn {
+    width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--divider); background: var(--surface);
+    font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .qty-value { font-weight: 700; font-size: 16px; min-width: 24px; text-align: center; }
+</style>
+</head>
+<body>
+
+<div id="shop-nav-mount"></div>
+
+<main class="shop-main" id="pd-root">
+  <p class="muted">Loading…</p>
+</main>
+
+<footer class="site-footer">
+  &copy; <span id="year"></span> The Shoolins. All rights reserved.
+</footer>
+
+<script src="/shop.js"></script>
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+  Shop.renderNav('shop');
+
+  const CATEGORY_COPY = {
+    women: 'Cut from breathable, lightweight fabric with a relaxed silhouette that moves with you. Designed to layer effortlessly, season to season.',
+    men: 'Tailored from durable, breathable cotton with a clean, considered fit. Built for everyday wear that holds its shape.',
+  };
+  const DEFAULT_COPY = 'Crafted from breathable cotton with a relaxed fit. A quiet, versatile piece designed to last.';
+  const SIZES = ['S', 'M', 'L', 'XL'];
+
+  const params = new URLSearchParams(window.location.search);
+  const productId = params.get('id');
+  let quantity = 1;
+  let selectedSize = 'M';
+  let product = null;
+  let wished = false;
+
+  function galleryImages(p) {
+    const imgs = [Shop.imageSrc(p)];
+    (p.imagesBase64 || []).forEach((b64) => imgs.push(`data:image/jpeg;base64,${b64}`));
+    return imgs;
+  }
+
+  async function loadProduct() {
+    const root = document.getElementById('pd-root');
+    if (!productId) {
+      root.innerHTML = '<p class="muted">No product specified.</p>';
+      return;
+    }
+    try {
+      product = await Shop.apiFetch(`/products/${encodeURIComponent(productId)}`);
+      if (Shop.isLoggedIn()) {
+        try {
+          const items = await Shop.apiFetch('/wishlist');
+          wished = items.some((i) => i.productId === product.id);
+        } catch (e) { /* ignore */ }
+      }
+      renderProduct();
+    } catch (e) {
+      root.innerHTML = `<p class="muted">Could not load product: ${e.message}</p>`;
+    }
+  }
+
+  function renderProduct() {
+    const root = document.getElementById('pd-root');
+    const images = galleryImages(product);
+    const copy = CATEGORY_COPY[product.category] || DEFAULT_COPY;
+
+    root.innerHTML = `
+      <div class="pd-wrap">
+        <div class="pd-gallery">
+          <button class="pd-wish-btn ${wished ? 'active' : ''}" id="wish-btn">${wished ? '&#10084;' : '&#9825;'}</button>
+          <div class="slides" id="slides">
+            ${images.map((src) => `<img src="${src}" alt="${product.name}" />`).join('')}
+          </div>
+        </div>
+        <div>
+          <span class="eyebrow" style="text-transform:uppercase;color:var(--gold-dark);font-size:12px;font-weight:700;letter-spacing:1.5px">${product.category}</span>
+          <h1 class="serif" style="margin:6px 0 10px;font-size:30px">${product.name}</h1>
+          <p class="serif" style="font-size:24px;font-weight:700;color:var(--gold-dark);margin:0 0 18px">${Shop.formatInr(product.price)}</p>
+          <p class="muted" style="line-height:1.7">${copy}</p>
+
+          <label>Size</label>
+          <div class="size-row" id="size-row"></div>
+
+          <label>Quantity</label>
+          <div class="qty-row">
+            <button class="qty-btn" id="qty-minus">&minus;</button>
+            <span class="qty-value" id="qty-value">1</span>
+            <button class="qty-btn" id="qty-plus">+</button>
+          </div>
+
+          <div style="margin-top:28px;display:flex;flex-direction:column;gap:12px">
+            <button class="btn btn-gold shine" id="add-to-cart-btn">Add to Cart</button>
+            <button class="btn btn-outline" id="buy-now-btn">Buy Now</button>
+          </div>
+        </div>
+      </div>
+      ${images.length > 1 ? `<div class="gallery-dots" id="gallery-dots"></div>` : ''}
+    `;
+
+    const sizeRow = document.getElementById('size-row');
+    SIZES.forEach((s) => {
+      const chip = document.createElement('div');
+      chip.className = 'size-chip' + (s === selectedSize ? ' selected' : '');
+      chip.textContent = s;
+      chip.addEventListener('click', () => {
+        selectedSize = s;
+        sizeRow.querySelectorAll('.size-chip').forEach((c) => c.classList.toggle('selected', c === chip));
+      });
+      sizeRow.appendChild(chip);
+    });
+
+    document.getElementById('qty-minus').addEventListener('click', () => setQty(quantity - 1));
+    document.getElementById('qty-plus').addEventListener('click', () => setQty(quantity + 1));
+
+    document.getElementById('wish-btn').addEventListener('click', toggleWishlist);
+    document.getElementById('add-to-cart-btn').addEventListener('click', addToCart);
+    document.getElementById('buy-now-btn').addEventListener('click', buyNow);
+
+    if (images.length > 1) {
+      const dotsEl = document.getElementById('gallery-dots');
+      images.forEach((_, i) => {
+        const dot = document.createElement('span');
+        dot.className = 'dot' + (i === 0 ? ' active' : '');
+        dotsEl.appendChild(dot);
+      });
+      const slidesEl = document.getElementById('slides');
+      slidesEl.addEventListener('scroll', () => {
+        const index = Math.round(slidesEl.scrollLeft / slidesEl.clientWidth);
+        dotsEl.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === index));
+      });
+    }
+  }
+
+  function setQty(v) {
+    quantity = Math.max(1, Math.min(10, v));
+    document.getElementById('qty-value').textContent = quantity;
+  }
+
+  async function toggleWishlist() {
+    if (!Shop.requireLogin()) return;
+    try {
+      if (wished) {
+        await Shop.apiFetch(`/wishlist/${product.id}`, { method: 'DELETE' });
+      } else {
+        await Shop.apiFetch('/wishlist', { method: 'POST', body: JSON.stringify({ productId: product.id }) });
+      }
+      wished = !wished;
+      const btn = document.getElementById('wish-btn');
+      btn.classList.toggle('active', wished);
+      btn.innerHTML = wished ? '&#10084;' : '&#9825;';
+    } catch (e) {
+      Shop.toast(e.message);
+    }
+  }
+
+  async function addToCart() {
+    if (!Shop.requireLogin()) return;
+    try {
+      await Shop.apiFetch('/cart', { method: 'POST', body: JSON.stringify({ productId: product.id, quantity }) });
+      Shop.toast(`${product.name} added to cart`);
+      Shop.refreshCartCount();
+    } catch (e) {
+      Shop.toast(e.message);
+    }
+  }
+
+  async function buyNow() {
+    if (!Shop.requireLogin()) return;
+    try {
+      await Shop.apiFetch('/cart', { method: 'POST', body: JSON.stringify({ productId: product.id, quantity }) });
+      const cart = await Shop.apiFetch('/cart');
+      const amount = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+      const paid = await Shop.showPaymentSheet(amount);
+      if (!paid) return;
+      const order = await Shop.apiFetch('/orders/checkout', { method: 'POST' });
+      Shop.refreshCartCount();
+      Shop.toast('Order placed successfully!');
+      window.location.href = '/orders.html';
+    } catch (e) {
+      Shop.toast(e.message);
+    }
+  }
+
+  loadProduct();
+</script>
+</body>
+</html>

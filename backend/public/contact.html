@@ -4,28 +4,23 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Contact — The Shoolins</title>
-<link rel="stylesheet" href="/site.css" />
+<link rel="stylesheet" href="/shop.css" />
+<style>
+  .contact-row { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--divider); }
+  .contact-row:last-child { border-bottom: none; }
+  .contact-row .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); width: 90px; flex-shrink: 0; }
+</style>
 </head>
 <body>
 
-<nav class="site-nav">
-  <span class="brand">THE SHOOLINS</span>
-  <div class="links">
-    <a href="/">Home</a>
-    <a href="/about.html">About</a>
-    <a href="/contact.html">Contact</a>
-    <a href="/admin/" id="nav-products" class="admin-link shine" style="display:none">Products</a>
-    <a href="/admin/" id="nav-admin" class="admin-link shine">Admin</a>
-    <button id="nav-logout" class="admin-link" style="display:none">Logout</button>
-  </div>
-</nav>
+<div id="shop-nav-mount"></div>
 
 <div class="page-banner">
   <h1>Contact Us</h1>
   <p>We'd love to hear from you</p>
 </div>
 
-<main class="site-main">
+<main class="shop-main narrow">
   <div class="card">
     <h2>Get in touch</h2>
     <div class="contact-row">
@@ -52,9 +47,10 @@
   &copy; <span id="year"></span> The Shoolins. All rights reserved.
 </footer>
 
+<script src="/shop.js"></script>
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
+  Shop.renderNav('contact');
 </script>
-<script src="/site-nav.js"></script>
 </body>
 </html>

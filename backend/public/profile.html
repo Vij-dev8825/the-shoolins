@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Profile — The Shoolins</title>
+<link rel="stylesheet" href="/shop.css" />
+<style>
+  .profile-header {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(11,24,48,0.15);
+    margin-bottom: 24px;
+  }
+  .profile-header .band { height: 80px; background: linear-gradient(120deg, var(--navy-deep), var(--navy)); }
+  .profile-header .body { background: var(--surface); padding: 0 24px 24px; text-align: center; }
+  .avatar-wrap {
+    width: 88px; height: 88px; border-radius: 50%; background: var(--surface);
+    margin: -44px auto 12px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2); overflow: hidden; font-size: 34px; color: var(--gold-dark);
+    font-family: 'Playfair Display', serif; font-weight: 700;
+  }
+  .avatar-wrap img { width: 100%; height: 100%; object-fit: cover; }
+  .menu-tile { display: flex; align-items: center; gap: 12px; padding: 14px 6px; border-bottom: 1px solid var(--divider); cursor: pointer; }
+  .menu-tile:last-child { border-bottom: none; }
+  .menu-tile .icon-circle { width: 38px; height: 38px; border-radius: 50%; background: rgba(212,175,55,0.15); display: flex; align-items: center; justify-content: center; color: var(--gold-dark); }
+</style>
+</head>
+<body>
+
+<div id="shop-nav-mount"></div>
+
+<main class="shop-main narrow" id="profile-root">
+  <p class="muted">Loading…</p>
+</main>
+
+<footer class="site-footer">
+  &copy; <span id="year"></span> The Shoolins. All rights reserved.
+</footer>
+
+<script src="/shop.js"></script>
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+  Shop.renderNav('profile');
+
+  let user = null;
+  let pendingPhotoBase64 = null;
+
+  function fileToCompressedBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('Could not read file'));
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('Could not decode image'));
+        img.onload = () => {
+          const maxDim = 512;
+          let { width, height } = img;
+          if (width > height && width > maxDim) { height = Math.round(height * maxDim / width); width = maxDim; }
+          else if (height > maxDim) { width = Math.round(width * maxDim / height); height = maxDim; }
+          const canvas = document.createElement('canvas');
+          canvas.width = width; canvas.height = height;
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function loadProfile() {
+    const root = document.getElementById('profile-root');
+    if (!Shop.isLoggedIn()) {
+      root.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">&#128100;</div>
+          <p>Log in to view your profile.</p>
+          <a href="/login.html?next=/profile.html" class="btn btn-navy shine" style="margin-top:10px">Log In</a>
+        </div>`;
+      return;
+    }
+    try {
+      user = await Shop.apiFetch('/auth/me');
+      Shop.setSession(Shop.getToken(), user);
+      renderView();
+    } catch (e) {
+      root.innerHTML = `<p class="muted">Could not load profile: ${e.message}</p>`;
+    }
+  }
+
+  function renderView() {
+    const root = document.getElementById('profile-root');
+    const locationLine = [user.city, user.state].filter(Boolean).join(', ');
+    root.innerHTML = `
+      <div class="profile-header">
+        <div class="band"></div>
+        <div class="body">
+          <div class="avatar-wrap shine">
+            ${user.photoBase64
+              ? `<img src="data:image/jpeg;base64,${user.photoBase64}" alt="avatar" />`
+              : (user.name ? user.name[0].toUpperCase() : '?')}
+          </div>
+          <h2 class="serif" style="margin:0">${user.name || 'Guest'}</h2>
+          <p class="muted" style="margin:4px 0 0">+91 ${user.mobile}</p>
+          ${locationLine ? `<p class="muted" style="margin:2px 0 0">&#128205; ${locationLine}</p>` : ''}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="menu-tile" id="edit-tile">
+          <span class="icon-circle">&#9998;</span>
+          <span style="flex:1;font-weight:600">Edit Profile</span>
+          <span>&rsaquo;</span>
+        </div>
+        <div class="menu-tile" onclick="window.location.href='/orders.html'">
+          <span class="icon-circle">&#128220;</span>
+          <span style="flex:1;font-weight:600">Orders</span>
+          <span>&rsaquo;</span>
+        </div>
+      </div>
+
+      <button class="btn btn-outline btn-block" id="logout-btn" style="margin-top:20px;color:var(--error);border-color:var(--error)">Log Out</button>
+    `;
+    document.getElementById('edit-tile').addEventListener('click', renderEdit);
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      Shop.clearSession();
+      Shop.updateNavAuthState();
+      window.location.href = '/';
+    });
+  }
+
+  function renderEdit() {
+    const root = document.getElementById('profile-root');
+    pendingPhotoBase64 = null;
+    root.innerHTML = `
+      <div class="card">
+        <h2>Edit Profile</h2>
+        <div style="text-align:center">
+          <div class="avatar-wrap" id="edit-avatar" style="margin:0 auto 14px">
+            ${user.photoBase64 ? `<img src="data:image/jpeg;base64,${user.photoBase64}" alt="avatar" />` : (user.name ? user.name[0].toUpperCase() : '?')}
+          </div>
+          <input type="file" id="photo-input" accept="image/*" style="max-width:240px;margin:0 auto" />
+        </div>
+
+        <label for="name">Full name</label>
+        <input id="name" type="text" value="${user.name || ''}" />
+
+        <label for="address">Address</label>
+        <input id="address" type="text" value="${user.address || ''}" placeholder="House / street / area" />
+
+        <label for="pincode">Pincode</label>
+        <input id="pincode" type="text" maxlength="6" value="${user.pincode || ''}" placeholder="6-digit pincode" />
+
+        <label for="city">City</label>
+        <input id="city" type="text" value="${user.city || ''}" />
+
+        <label for="state">State</label>
+        <input id="state" type="text" value="${user.state || ''}" />
+
+        <p class="muted" id="edit-error" style="color:var(--error);display:none"></p>
+
+        <div style="display:flex;gap:10px;margin-top:18px">
+          <button class="btn btn-gold shine" id="save-profile-btn">Save Changes</button>
+          <button class="btn btn-outline" id="cancel-edit-btn">Cancel</button>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('photo-input').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        pendingPhotoBase64 = await fileToCompressedBase64(file);
+        document.getElementById('edit-avatar').innerHTML = `<img src="data:image/jpeg;base64,${pendingPhotoBase64}" alt="avatar" />`;
+      } catch (err) {
+        showEditError(err.message);
+      }
+    });
+
+    let pincodeLookupTimer;
+    document.getElementById('pincode').addEventListener('input', (e) => {
+      clearTimeout(pincodeLookupTimer);
+      const value = e.target.value.trim();
+      if (value.length !== 6) return;
+      pincodeLookupTimer = setTimeout(() => lookupPincode(value), 400);
+    });
+
+    document.getElementById('cancel-edit-btn').addEventListener('click', renderView);
+    document.getElementById('save-profile-btn').addEventListener('click', saveProfile);
+  }
+
+  async function lookupPincode(pincode) {
+    try {
+      const res = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+      const data = await res.json();
+      if (!data.length || data[0].Status !== 'Success') return;
+      const postOffices = data[0].PostOffice || [];
+      if (!postOffices.length) return;
+      document.getElementById('state').value = postOffices[0].State || '';
+      document.getElementById('city').value = postOffices[0].District || '';
+    } catch (e) { /* silent — best effort */ }
+  }
+
+  function showEditError(msg) {
+    const el = document.getElementById('edit-error');
+    el.textContent = msg;
+    el.style.display = msg ? 'block' : 'none';
+  }
+
+  async function saveProfile() {
+    showEditError('');
+    const name = document.getElementById('name').value.trim();
+    if (!name) { showEditError('Name is required.'); return; }
+    const body = {
+      name,
+      address: document.getElementById('address').value.trim(),
+      city: document.getElementById('city').value.trim(),
+      state: document.getElementById('state').value.trim(),
+      pincode: document.getElementById('pincode').value.trim(),
+    };
+    if (pendingPhotoBase64) body.photoBase64 = pendingPhotoBase64;
+    try {
+      user = await Shop.apiFetch('/auth/me', { method: 'PATCH', body: JSON.stringify(body) });
+      Shop.setSession(Shop.getToken(), user);
+      Shop.toast('Profile updated');
+      renderView();
+    } catch (e) {
+      showEditError(e.message);
+    }
+  }
+
+  loadProfile();
+</script>
+</body>
+</html>

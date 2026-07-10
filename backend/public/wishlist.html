@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Wishlist — The Shoolins</title>
+<link rel="stylesheet" href="/shop.css" />
+</head>
+<body>
+
+<div id="shop-nav-mount"></div>
+
+<div class="page-banner">
+  <h1>Your Wishlist</h1>
+  <p>Pieces you're saving for later</p>
+</div>
+
+<main class="shop-main" id="wishlist-root">
+  <p class="muted">Loading…</p>
+</main>
+
+<footer class="site-footer">
+  &copy; <span id="year"></span> The Shoolins. All rights reserved.
+</footer>
+
+<script src="/shop.js"></script>
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+  Shop.renderNav('wishlist');
+
+  async function loadWishlist() {
+    const root = document.getElementById('wishlist-root');
+    if (!Shop.isLoggedIn()) {
+      root.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">&#9825;</div>
+          <p>Log in to view your wishlist.</p>
+          <a href="/login.html?next=/wishlist.html" class="btn btn-navy shine" style="margin-top:10px">Log In</a>
+        </div>`;
+      return;
+    }
+    try {
+      const items = await Shop.apiFetch('/wishlist');
+      if (!items.length) {
+        root.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">&#9825;</div>
+            <p>Your wishlist is empty.</p>
+            <a href="/shop.html" class="btn btn-navy shine" style="margin-top:10px">Browse Products</a>
+          </div>`;
+        return;
+      }
+      const grid = document.createElement('div');
+      grid.className = 'product-grid';
+      items.forEach((p) => grid.appendChild(renderCard(p)));
+      root.innerHTML = '';
+      root.appendChild(grid);
+    } catch (e) {
+      root.innerHTML = `<p class="muted">Could not load wishlist: ${e.message}</p>`;
+    }
+  }
+
+  function renderCard(p) {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    card.innerHTML = `
+      <div class="thumb-wrap">
+        <img src="${Shop.imageSrc(p)}" alt="${p.name}" loading="lazy" />
+        <span class="category-tag">${p.category}</span>
+        <button class="wish-btn active">&#10084;</button>
+      </div>
+      <div class="info">
+        <div class="name">${p.name}</div>
+        <div class="price">${Shop.formatInr(p.price)}</div>
+      </div>
+    `;
+    card.querySelector('.thumb-wrap img').addEventListener('click', () => {
+      window.location.href = `/product.html?id=${encodeURIComponent(p.productId)}`;
+    });
+    card.querySelector('.info').addEventListener('click', () => {
+      window.location.href = `/product.html?id=${encodeURIComponent(p.productId)}`;
+    });
+    card.querySelector('.wish-btn').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      try {
+        await Shop.apiFetch(`/wishlist/${p.productId}`, { method: 'DELETE' });
+        card.remove();
+        Shop.toast('Removed from wishlist');
+      } catch (err) {
+        Shop.toast(err.message);
+      }
+    });
+    return card;
+  }
+
+  loadWishlist();
+</script>
+</body>
+</html>
