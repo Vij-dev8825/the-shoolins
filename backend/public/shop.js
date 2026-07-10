@@ -273,7 +273,6 @@ const Shop = (() => {
   // ---------- Quick view modal (opened via the eye icon on product cards) ----------
   async function showQuickView(product) {
     const images = productImages(product);
-    let index = 0;
     let quantity = 1;
     let wished = false;
     if (isLoggedIn()) {
@@ -288,103 +287,142 @@ const Shop = (() => {
     backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
     function close() { backdrop.remove(); }
 
-    function render() {
-      backdrop.innerHTML = `
-        <div class="modal-sheet quickview">
-          <button class="modal-close-btn" id="qv-close">&times;</button>
-          <div class="qv-body">
-            <div class="qv-image">
-              <img src="${images[index]}" alt="${product.name}" />
-              ${images.length > 1 ? `<div class="gallery-dots" id="qv-dots"></div>` : ''}
+    backdrop.innerHTML = `
+      <div class="modal-sheet quickview">
+        <button class="modal-close-btn" id="qv-close">&times;</button>
+        <div class="qv-body">
+          <div class="qv-image">
+            <div class="qv-slides-track" id="qv-slides-track">
+              ${images.map((src) => `<img src="${src}" alt="${product.name}" draggable="false" />`).join('')}
             </div>
-            <div class="qv-details">
-              <span class="eyebrow" style="text-transform:uppercase;color:var(--gold-dark);font-size:11px;font-weight:700;letter-spacing:1.5px">${product.category}</span>
-              <h2 class="serif" style="margin:6px 0 8px;font-size:23px">${product.name}</h2>
-              <p class="serif" style="font-size:22px;font-weight:700;color:var(--gold-dark);margin:0 0 20px">${formatInr(product.price)}</p>
-              <div class="qv-qty-row">
-                <button class="qv-qty-btn" id="qv-qty-minus">&minus;</button>
-                <span class="qv-qty-value" id="qv-qty-value">${quantity}</span>
-                <button class="qv-qty-btn" id="qv-qty-plus">+</button>
-              </div>
-              <div style="display:flex;gap:10px;margin-top:auto">
-                <button class="btn btn-gold shine" id="qv-add-btn" style="flex:1">Add to Cart</button>
-                <button class="qv-wish-btn ${wished ? 'active' : ''}" id="qv-wish-btn">${wished ? '&#10084;' : '&#9825;'}</button>
-              </div>
-              <button class="btn btn-outline" id="qv-buy-btn" style="margin-top:10px">Buy Now</button>
-              <div class="qv-pay-row">
-                <span class="pay-chip">UPI</span>
-                <span class="pay-chip">VISA</span>
-                <span class="pay-chip">Mastercard</span>
-                <span class="pay-chip">RuPay</span>
-                <span class="pay-chip">Net Banking</span>
-              </div>
-              <a href="/product.html?id=${encodeURIComponent(product.id)}" class="muted" style="margin-top:14px;font-size:13px;text-align:center;text-decoration:none">View full details &rarr;</a>
+            ${images.length > 1 ? `<div class="gallery-dots" id="qv-dots"></div>` : ''}
+          </div>
+          <div class="qv-details">
+            <span class="eyebrow" style="text-transform:uppercase;color:var(--gold-dark);font-size:11px;font-weight:700;letter-spacing:1.5px">${product.category}</span>
+            <h2 class="serif" style="margin:6px 0 8px;font-size:23px">${product.name}</h2>
+            <p class="serif" style="font-size:22px;font-weight:700;color:var(--gold-dark);margin:0 0 20px">${formatInr(product.price)}</p>
+            <div class="qv-qty-row">
+              <button class="qv-qty-btn" id="qv-qty-minus">&minus;</button>
+              <span class="qv-qty-value" id="qv-qty-value">${quantity}</span>
+              <button class="qv-qty-btn" id="qv-qty-plus">+</button>
             </div>
+            <div style="display:flex;gap:10px;margin-top:auto">
+              <button class="btn btn-gold shine" id="qv-add-btn" style="flex:1">Add to Cart</button>
+              <button class="qv-wish-btn ${wished ? 'active' : ''}" id="qv-wish-btn">${wished ? '&#10084;' : '&#9825;'}</button>
+            </div>
+            <button class="btn btn-outline" id="qv-buy-btn" style="margin-top:10px">Buy Now</button>
+            <div class="qv-pay-row">
+              <span class="pay-chip">UPI</span>
+              <span class="pay-chip">VISA</span>
+              <span class="pay-chip">Mastercard</span>
+              <span class="pay-chip">RuPay</span>
+              <span class="pay-chip">Net Banking</span>
+            </div>
+            <a href="/product.html?id=${encodeURIComponent(product.id)}" class="muted" style="margin-top:14px;font-size:13px;text-align:center;text-decoration:none">View full details &rarr;</a>
           </div>
         </div>
-      `;
+      </div>
+    `;
 
-      if (images.length > 1) {
-        const dotsEl = backdrop.querySelector('#qv-dots');
-        images.forEach((_, i) => {
-          const dot = document.createElement('span');
-          dot.className = 'dot' + (i === index ? ' active' : '');
-          dot.addEventListener('click', () => { index = i; render(); });
-          dotsEl.appendChild(dot);
-        });
+    document.body.appendChild(backdrop);
+
+    // Pointer-driven carousel (matches the product detail page's gallery) so
+    // dragging the image cycles through photos instead of leaving the only
+    // interaction as small dot clicks.
+    if (images.length > 1) {
+      const track = backdrop.querySelector('#qv-slides-track');
+      const dotsEl = backdrop.querySelector('#qv-dots');
+      let index = 0;
+      let dragging = false;
+      let dragStartX = 0;
+      let dragDeltaX = 0;
+
+      images.forEach((_, i) => {
+        const dot = document.createElement('span');
+        dot.className = 'dot' + (i === 0 ? ' active' : '');
+        dot.addEventListener('click', () => goTo(i));
+        dotsEl.appendChild(dot);
+      });
+
+      function goTo(i) {
+        index = Math.max(0, Math.min(images.length - 1, i));
+        track.style.transition = 'transform 0.3s ease';
+        track.style.transform = `translateX(-${index * 100}%)`;
+        dotsEl.querySelectorAll('.dot').forEach((d, i2) => d.classList.toggle('active', i2 === index));
       }
 
-      backdrop.querySelector('#qv-close').addEventListener('click', close);
-      backdrop.querySelector('#qv-qty-minus').addEventListener('click', () => {
-        quantity = Math.max(1, quantity - 1);
-        backdrop.querySelector('#qv-qty-value').textContent = quantity;
+      track.addEventListener('pointerdown', (e) => {
+        dragging = true;
+        dragStartX = e.clientX;
+        dragDeltaX = 0;
+        track.style.transition = 'none';
+        track.style.cursor = 'grabbing';
+        track.setPointerCapture(e.pointerId);
       });
-      backdrop.querySelector('#qv-qty-plus').addEventListener('click', () => {
-        quantity = Math.min(10, quantity + 1);
-        backdrop.querySelector('#qv-qty-value').textContent = quantity;
+      track.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        dragDeltaX = e.clientX - dragStartX;
+        track.style.transform = `translateX(calc(-${index * 100}% + ${dragDeltaX}px))`;
       });
-      backdrop.querySelector('#qv-add-btn').addEventListener('click', async () => {
-        if (!requireLogin()) return;
-        try {
-          await apiFetch('/cart', { method: 'POST', body: JSON.stringify({ productId: product.id, quantity }) });
-          toast(`${product.name} added to cart`);
-          refreshCartCount();
-          close();
-        } catch (e) { toast(e.message); }
-      });
-      backdrop.querySelector('#qv-buy-btn').addEventListener('click', async () => {
-        if (!requireLogin()) return;
-        try {
-          await apiFetch('/cart', { method: 'POST', body: JSON.stringify({ productId: product.id, quantity }) });
-          const cart = await apiFetch('/cart');
-          const amount = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
-          const paid = await showPaymentSheet(amount);
-          if (!paid) return;
-          await apiFetch('/orders/checkout', { method: 'POST' });
-          refreshCartCount();
-          toast('Order placed successfully!');
-          close();
-          window.location.href = '/orders.html';
-        } catch (e) { toast(e.message); }
-      });
-      backdrop.querySelector('#qv-wish-btn').addEventListener('click', async () => {
-        if (!requireLogin()) return;
-        const btn = backdrop.querySelector('#qv-wish-btn');
-        try {
-          if (wished) {
-            await apiFetch(`/wishlist/${product.id}`, { method: 'DELETE' });
-          } else {
-            await apiFetch('/wishlist', { method: 'POST', body: JSON.stringify({ productId: product.id }) });
-          }
-          wished = !wished;
-          btn.classList.toggle('active', wished);
-          btn.innerHTML = wished ? '&#10084;' : '&#9825;';
-        } catch (e) { toast(e.message); }
-      });
+      function endDrag() {
+        if (!dragging) return;
+        dragging = false;
+        track.style.cursor = 'grab';
+        if (dragDeltaX < -50 && index < images.length - 1) goTo(index + 1);
+        else if (dragDeltaX > 50 && index > 0) goTo(index - 1);
+        else goTo(index);
+      }
+      track.addEventListener('pointerup', endDrag);
+      track.addEventListener('pointercancel', endDrag);
     }
 
-    render();
-    document.body.appendChild(backdrop);
+    backdrop.querySelector('#qv-close').addEventListener('click', close);
+    backdrop.querySelector('#qv-qty-minus').addEventListener('click', () => {
+      quantity = Math.max(1, quantity - 1);
+      backdrop.querySelector('#qv-qty-value').textContent = quantity;
+    });
+    backdrop.querySelector('#qv-qty-plus').addEventListener('click', () => {
+      quantity = Math.min(10, quantity + 1);
+      backdrop.querySelector('#qv-qty-value').textContent = quantity;
+    });
+    backdrop.querySelector('#qv-add-btn').addEventListener('click', async () => {
+      if (!requireLogin()) return;
+      try {
+        await apiFetch('/cart', { method: 'POST', body: JSON.stringify({ productId: product.id, quantity }) });
+        toast(`${product.name} added to cart`);
+        refreshCartCount();
+        close();
+      } catch (e) { toast(e.message); }
+    });
+    backdrop.querySelector('#qv-buy-btn').addEventListener('click', async () => {
+      if (!requireLogin()) return;
+      try {
+        await apiFetch('/cart', { method: 'POST', body: JSON.stringify({ productId: product.id, quantity }) });
+        const cart = await apiFetch('/cart');
+        const amount = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+        const paid = await showPaymentSheet(amount);
+        if (!paid) return;
+        await apiFetch('/orders/checkout', { method: 'POST' });
+        refreshCartCount();
+        toast('Order placed successfully!');
+        close();
+        window.location.href = '/orders.html';
+      } catch (e) { toast(e.message); }
+    });
+    backdrop.querySelector('#qv-wish-btn').addEventListener('click', async () => {
+      if (!requireLogin()) return;
+      const btn = backdrop.querySelector('#qv-wish-btn');
+      try {
+        if (wished) {
+          await apiFetch(`/wishlist/${product.id}`, { method: 'DELETE' });
+        } else {
+          await apiFetch('/wishlist', { method: 'POST', body: JSON.stringify({ productId: product.id }) });
+        }
+        wished = !wished;
+        btn.classList.toggle('active', wished);
+        btn.innerHTML = wished ? '&#10084;' : '&#9825;';
+      } catch (e) { toast(e.message); }
+    });
   }
 
   return {

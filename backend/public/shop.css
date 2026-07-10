@@ -536,8 +536,9 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outl
 .qv-body { display: grid; grid-template-columns: 1fr 1fr; }
 @media (max-width: 640px) { .qv-body { grid-template-columns: 1fr; } }
 .qv-image { position: relative; aspect-ratio: 0.85; background: var(--divider); overflow: hidden; }
-.qv-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.qv-image .gallery-dots { position: absolute; left: 0; right: 0; bottom: 12px; margin: 0; }
+.qv-image .qv-slides-track { display: flex; height: 100%; touch-action: pan-y; cursor: grab; }
+.qv-image .qv-slides-track img { flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover; -webkit-user-drag: none; user-select: none; }
+.qv-image .gallery-dots { position: absolute; left: 0; right: 0; bottom: 12px; margin: 0; z-index: 2; }
 .qv-details { padding: 32px 30px; display: flex; flex-direction: column; }
 .qv-qty-row { display: flex; align-items: center; gap: 16px; margin-bottom: 22px; }
 .qv-qty-btn {
