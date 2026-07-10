@@ -355,6 +355,38 @@ header.shop-nav {
   color: var(--muted);
 }
 .product-card .wish-btn.active { color: var(--error); }
+.product-card .thumb-dots {
+  position: absolute;
+  left: 0; right: 0; bottom: 8px;
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  z-index: 1;
+  pointer-events: none;
+}
+.product-card .thumb-dots .dot {
+  width: 5px; height: 5px; border-radius: 3px;
+  background: rgba(255,255,255,0.55);
+  transition: background 0.15s ease, width 0.15s ease;
+}
+.product-card .thumb-dots .dot.active { width: 14px; background: var(--gold-light); }
+.product-card .quickview-btn {
+  position: absolute;
+  top: 50px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.18);
+  color: var(--muted);
+}
+.product-card .quickview-btn svg { width: 15px; height: 15px; }
 .product-card .info { padding: 14px 14px 16px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
 .product-card .name { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.3; }
 .product-card .price { font-family: 'Playfair Display', serif; font-weight: 700; color: var(--gold-dark); font-size: 17px; margin-top: auto; }
@@ -493,6 +525,31 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outl
   animation: spin 0.8s linear infinite; margin: 0 auto;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+.modal-sheet.quickview { max-width: 700px; padding: 0; overflow: hidden; position: relative; }
+.qv-close {
+  position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border-radius: 50%;
+  background: var(--surface); border: none; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 20px; line-height: 1; color: var(--muted); z-index: 3;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+}
+.qv-body { display: grid; grid-template-columns: 1fr 1fr; }
+@media (max-width: 640px) { .qv-body { grid-template-columns: 1fr; } }
+.qv-image { position: relative; aspect-ratio: 0.85; background: var(--divider); overflow: hidden; }
+.qv-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.qv-image .gallery-dots { position: absolute; left: 0; right: 0; bottom: 12px; margin: 0; }
+.qv-details { padding: 32px 30px; display: flex; flex-direction: column; }
+.qv-qty-row { display: flex; align-items: center; gap: 16px; margin-bottom: 22px; }
+.qv-qty-btn {
+  width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--divider); background: var(--surface);
+  font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.qv-qty-value { font-weight: 700; font-size: 15px; min-width: 22px; text-align: center; }
+.qv-wish-btn {
+  width: 46px; height: 46px; border-radius: 10px; border: 1.5px solid var(--divider); background: var(--surface);
+  display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; color: var(--muted);
+  flex-shrink: 0;
+}
+.qv-wish-btn.active { color: var(--error); border-color: var(--error); }
 .pay-success-icon {
   width: 64px; height: 64px; border-radius: 50%; background: var(--success);
   color: white; display: flex; align-items: center; justify-content: center;
