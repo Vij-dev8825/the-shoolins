@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Contact — The Shoolins</title>
+<link rel="stylesheet" href="/site.css" />
+</head>
+<body>
+
+<nav class="site-nav">
+  <span class="brand">THE SHOOLINS</span>
+  <div class="links">
+    <a href="/">Home</a>
+    <a href="/about.html">About</a>
+    <a href="/contact.html">Contact</a>
+    <a href="/admin/" class="admin-link">Admin</a>
+  </div>
+</nav>
+
+<main class="site-main">
+  <div class="card">
+    <h2>Get in touch</h2>
+    <div class="contact-row">
+      <span class="label">Email</span>
+      <span>hello@theshoolins.example</span>
+    </div>
+    <div class="contact-row">
+      <span class="label">Phone</span>
+      <span>+91 00000 00000</span>
+    </div>
+    <div class="contact-row">
+      <span class="label">Address</span>
+      <span>Coimbatore, Tamil Nadu, India</span>
+    </div>
+    <p class="muted" style="margin-top: 20px;">
+      These are placeholder details — replace them with your real contact
+      information. Edit <code>backend/public/contact.html</code> directly, or
+      ask to have it updated.
+    </p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  &copy; <span id="year"></span> The Shoolins. All rights reserved.
+</footer>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>

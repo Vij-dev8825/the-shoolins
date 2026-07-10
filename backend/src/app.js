@@ -17,7 +17,9 @@ app.use(cors());
 // before upload, but this leaves headroom.
 app.use(express.json({ limit: "8mb" }));
 
-app.use("/admin", express.static(path.join(__dirname, "../public/admin")));
+// Serves the public marketing pages (/, /about.html, /contact.html) as well
+// as the admin panel (public/admin/index.html, reachable at /admin/).
+app.use(express.static(path.join(__dirname, "../public")));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
