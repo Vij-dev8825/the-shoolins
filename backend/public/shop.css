@@ -175,9 +175,41 @@ header.shop-nav {
   font-family: inherit;
 }
 .shop-nav .pill:hover { background: rgba(212, 175, 55, 0.12); text-decoration: none; }
+.nav-burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 34px;
+  height: 34px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+.nav-burger span { display: block; width: 100%; height: 2px; background: var(--gold-light); border-radius: 2px; }
 @media (max-width: 760px) {
   .nav-utility-inner { justify-content: space-between; }
-  .nav-main-inner { justify-content: center; text-align: center; }
+  .nav-main { position: relative; }
+  .nav-main-inner { justify-content: space-between; flex-wrap: nowrap; }
+  .nav-burger { display: flex; }
+  .nav-main nav#nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    background: var(--navy-deep);
+    padding: 6px 24px 14px;
+    box-shadow: 0 14px 26px rgba(6, 14, 30, 0.35);
+  }
+  .nav-main nav#nav-links.open { display: flex; }
+  .nav-main nav#nav-links a { width: 100%; padding: 11px 0; border-bottom: 1px solid rgba(212, 175, 55, 0.12); }
+  .nav-main nav#nav-links a:last-child { border-bottom: none; }
 }
 
 /* ---------- Shine sweep ---------- */

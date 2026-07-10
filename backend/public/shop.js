@@ -156,7 +156,8 @@ const Shop = (() => {
               <span class="brand-logo-wrap"><img src="/media/logo.png" class="brand-logo" alt="The Shoolins" /></span>
               THE SHOOLINS
             </a>
-            <nav>
+            <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+            <nav id="nav-links">
               ${navLink('/', 'navHome', 'Home', 'home')}
               ${navLink('/shop.html', 'navShop', 'Shop', 'shop')}
               ${navLink('/combos.html', 'navCombos', 'Combos', 'combos')}
@@ -170,6 +171,9 @@ const Shop = (() => {
       </header>
     `;
     refreshCartCount();
+    document.getElementById('nav-burger').addEventListener('click', () => {
+      document.getElementById('nav-links').classList.toggle('open');
+    });
     if (hasI18n) {
       I18N.apply(mount);
       document.getElementById('lang-select').addEventListener('change', (e) => {
