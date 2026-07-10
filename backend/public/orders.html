@@ -18,7 +18,9 @@
     padding: 4px 10px; border-radius: 999px;
   }
   .order-thumbs { display: flex; gap: 8px; margin: 14px 0; }
-  .order-thumbs img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 2px solid var(--surface); box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+  .order-thumbs img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 2px solid var(--surface); box-shadow: 0 2px 6px rgba(0,0,0,0.15); cursor: pointer; transition: transform 0.15s ease; }
+  .order-thumbs img:hover { transform: translateY(-3px); }
+  .order-actions { display: flex; justify-content: flex-end; margin-top: 14px; }
   .order-total-row { display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--divider); padding-top: 12px; margin-top: 8px; }
   .order-total-row .label { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; }
   .order-total-row .amount { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--gold-dark); }
@@ -96,16 +98,40 @@
         </div>
         <p class="muted" style="margin:0">${formatDate(order.createdAt)} &middot; ${itemCount} item${itemCount === 1 ? '' : 's'}</p>
         <div class="order-thumbs">
-          ${visible.map((i) => `<img src="${Shop.imageSrc(i)}" alt="${i.name}" />`).join('')}
+          ${visible.map((i) => `<img src="${Shop.imageSrc(i)}" alt="${i.name}" data-product-id="${i.productId}" />`).join('')}
           ${overflow > 0 ? `<div style="width:56px;height:56px;border-radius:8px;background:var(--divider);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--gold-dark)">+${overflow}</div>` : ''}
         </div>
         <div class="order-total-row">
           <span class="label">Total</span>
           <span class="amount">${Shop.formatInr(order.total)}</span>
         </div>
+        <div class="order-actions">
+          <button class="btn btn-outline" data-action="reorder">Buy Again</button>
+        </div>
       </div>
     `;
+    el.querySelectorAll('.order-thumbs img').forEach((img) => {
+      img.addEventListener('click', () => {
+        window.location.href = `/product.html?id=${encodeURIComponent(img.dataset.productId)}`;
+      });
+    });
+    el.querySelector('[data-action="reorder"]').addEventListener('click', (e) => reorder(order, e.currentTarget));
     return el;
+  }
+
+  async function reorder(order, btn) {
+    btn.disabled = true;
+    try {
+      for (const item of order.items) {
+        await Shop.apiFetch('/cart', { method: 'POST', body: JSON.stringify({ productId: item.productId, quantity: item.quantity }) });
+      }
+      Shop.refreshCartCount();
+      Shop.toast('Added to cart');
+      window.location.href = '/cart.html';
+    } catch (e) {
+      Shop.toast(e.message);
+      btn.disabled = false;
+    }
   }
 
   loadOrders();
