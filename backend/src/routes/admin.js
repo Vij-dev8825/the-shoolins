@@ -132,4 +132,13 @@ router.get("/enquiries", async (req, res, next) => {
   }
 });
 
+router.get("/contact-messages", async (req, res, next) => {
+  try {
+    const messages = await prisma.contactMessage.findMany({ orderBy: { createdAt: "desc" } });
+    res.status(200).json(messages);
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;

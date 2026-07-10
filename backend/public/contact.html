@@ -41,6 +41,26 @@
       ask to have it updated.
     </p>
   </div>
+
+  <div class="card" id="contact-form-card" style="margin-top: 20px;">
+    <h2>Drop Us a Line</h2>
+
+    <label for="cm-name">Your Name (required)</label>
+    <input id="cm-name" type="text" placeholder="Your name" />
+
+    <label for="cm-email">Your Email (required)</label>
+    <input id="cm-email" type="email" placeholder="you@example.com" />
+
+    <label for="cm-phone">Your Phone Number</label>
+    <input id="cm-phone" type="tel" placeholder="Optional" />
+
+    <label for="cm-message">Your Message (required)</label>
+    <textarea id="cm-message" rows="4" placeholder="How can we help?"></textarea>
+
+    <p class="muted" id="cm-error" style="color:var(--error);display:none"></p>
+
+    <button class="btn btn-gold btn-block shine" id="cm-submit-btn" style="margin-top:16px">Send Message</button>
+  </div>
 </main>
 
 <div id="shop-footer-mount"></div>
@@ -51,6 +71,45 @@
   Shop.renderNav('contact');
   Shop.renderFooter();
   I18N.apply();
+
+  document.getElementById('cm-submit-btn').addEventListener('click', async () => {
+    const errEl = document.getElementById('cm-error');
+    errEl.style.display = 'none';
+
+    const name = document.getElementById('cm-name').value.trim();
+    const email = document.getElementById('cm-email').value.trim();
+    const message = document.getElementById('cm-message').value.trim();
+
+    if (!name || !email || !message) {
+      errEl.textContent = 'Name, email, and message are required.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    const body = {
+      name,
+      email,
+      phone: document.getElementById('cm-phone').value.trim(),
+      message,
+    };
+
+    const btn = document.getElementById('cm-submit-btn');
+    btn.disabled = true;
+    try {
+      await Shop.apiFetch('/contact', { method: 'POST', body: JSON.stringify(body) });
+      document.getElementById('contact-form-card').innerHTML = `
+        <div style="text-align:center;padding:20px 0">
+          <div class="pay-success-icon">&#10003;</div>
+          <h2 style="margin:16px 0 4px">Thank you!</h2>
+          <p class="muted">We've received your message and will be in touch shortly.</p>
+        </div>
+      `;
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.style.display = 'block';
+      btn.disabled = false;
+    }
+  });
 </script>
 </body>
 </html>

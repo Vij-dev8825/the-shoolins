@@ -52,6 +52,9 @@ Seed data (6 products, ids are strings "1".."6", prices are INR):
 ## Newsletter (footer signup)
 - `POST /newsletter` body `{ email }` -> `201 { subscribed: true }`. Public, no auth. Idempotent — resubmitting an already-subscribed email is a no-op, not an error.
 
+## Contact (general "Contact Us" form, distinct from bulk enquiries)
+- `POST /contact` body `{ name, email, phone?, message }` -> `201 { id, received: true }`. Public, no auth. Listed only via `GET /admin/contact-messages` (admin auth required).
+
 ## Admin (product management)
 A minimal password-protected web UI lives at `/admin` (static page, not under `/api`). It calls these endpoints:
 - `POST /admin/login` body `{ password }` -> `200 { token }` (checked against `ADMIN_PASSWORD` env var) or `401`. Token carries `{ role: "admin" }`, expires in 12h.
@@ -61,6 +64,7 @@ A minimal password-protected web UI lives at `/admin` (static page, not under `/
 - `PATCH /admin/products/:id` body any subset of `{ name, price, category, imageBase64, imagesBase64 }` -> `200` updated product, or `404`.
 - `DELETE /admin/products/:id` -> `204`, or `404`. Cascades to any existing cart/wishlist rows referencing it.
 - `GET /admin/enquiries` -> `200 [{ id, name, company, email, phone, productInterest, quantity, message, createdAt }]`, newest first.
+- `GET /admin/contact-messages` -> `200 [{ id, name, email, phone, message, createdAt }]`, newest first.
 
 ## Errors
 All error responses: `{ error: "message" }` with appropriate 4xx/5xx status.
