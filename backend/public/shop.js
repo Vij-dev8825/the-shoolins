@@ -100,26 +100,37 @@ const Shop = (() => {
 
     mount.innerHTML = `
       <header class="shop-nav">
-        <div class="shop-nav-inner">
-          <a href="/" class="brand"><img src="/media/logo.png" class="brand-logo" alt="The Shoolins" /> THE SHOOLINS</a>
-          <nav>
-            ${navLink('/', 'navHome', 'Home', 'home')}
-            ${navLink('/shop.html', 'navShop', 'Shop', 'shop')}
-            ${navLink('/combos.html', 'navCombos', 'Combos', 'combos')}
-            ${navLink('/reviews.html', 'navReviews', 'Reviews', 'reviews')}
-            ${navLink('/bulk-enquiry.html', 'navBulk', 'Bulk Enquiry', 'bulk')}
-            ${navLink('/about.html', 'navAbout', 'About', 'about')}
-            ${navLink('/contact.html', 'navContact', 'Contact', 'contact')}
+        <div class="nav-utility">
+          <div class="nav-utility-inner">
             ${hasI18n ? `<select id="lang-select" class="lang-select">${langOptions}</select>` : ''}
-            <a href="/wishlist.html" class="icon-link" title="Wishlist">&#9825;</a>
-            <a href="/cart.html" class="icon-link" title="Cart">
-              &#128092;
-              <span class="badge" id="nav-cart-badge" style="display:none">0</span>
+            <div class="utility-icons">
+              <a href="/wishlist.html" class="icon-link" title="Wishlist">&#9825;</a>
+              <a href="/cart.html" class="icon-link" title="Cart">
+                &#128092;
+                <span class="badge" id="nav-cart-badge" style="display:none">0</span>
+              </a>
+              ${loggedIn
+                ? `<a href="/profile.html" class="pill shine" data-i18n="navProfile">Profile</a>`
+                : `<a href="/login.html" class="pill shine" data-i18n="navLogin">Login</a>`}
+            </div>
+          </div>
+        </div>
+        <div class="nav-main">
+          <div class="nav-main-inner">
+            <a href="/" class="brand">
+              <span class="brand-logo-wrap"><img src="/media/logo.png" class="brand-logo" alt="The Shoolins" /></span>
+              THE SHOOLINS
             </a>
-            ${loggedIn
-              ? `<a href="/profile.html" class="pill shine" data-i18n="navProfile">Profile</a>`
-              : `<a href="/login.html" class="pill shine" data-i18n="navLogin">Login</a>`}
-          </nav>
+            <nav>
+              ${navLink('/', 'navHome', 'Home', 'home')}
+              ${navLink('/shop.html', 'navShop', 'Shop', 'shop')}
+              ${navLink('/combos.html', 'navCombos', 'Combos', 'combos')}
+              ${navLink('/reviews.html', 'navReviews', 'Reviews', 'reviews')}
+              ${navLink('/bulk-enquiry.html', 'navBulk', 'Bulk Enquiry', 'bulk')}
+              ${navLink('/about.html', 'navAbout', 'About', 'about')}
+              ${navLink('/contact.html', 'navContact', 'Contact', 'contact')}
+            </nav>
+          </div>
         </div>
       </header>
     `;

@@ -26,23 +26,43 @@ h1, h2, h3, .serif { font-family: 'Playfair Display', Georgia, serif; }
 a { color: var(--gold-dark); text-decoration: none; }
 img { max-width: 100%; }
 
-/* ---------- Nav ---------- */
+/* ---------- Nav (two-tier: slim utility strip + main bar) ---------- */
 header.shop-nav {
   position: sticky;
   top: 0;
   z-index: 30;
-  background: linear-gradient(120deg, var(--navy-deep), var(--navy));
+  background: var(--navy-deep);
   color: var(--cream);
   box-shadow: 0 4px 20px rgba(6, 14, 30, 0.35);
 }
-.shop-nav-inner {
+.nav-utility {
+  border-bottom: 1px solid rgba(212, 175, 55, 0.22);
+}
+.nav-utility-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 7px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+}
+.nav-utility .utility-icons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav-main {
+  background: linear-gradient(120deg, var(--navy-deep), var(--navy));
+}
+.nav-main-inner {
   max-width: 1180px;
   margin: 0 auto;
   padding: 14px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 20px;
   flex-wrap: wrap;
 }
 .shop-nav .brand {
@@ -53,54 +73,80 @@ header.shop-nav {
   color: var(--gold-light);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
-.shop-nav .brand .crown { font-size: 16px; }
-.shop-nav .brand-logo {
-  width: 30px;
-  height: 30px;
+.shop-nav .brand-logo-wrap {
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  object-fit: cover;
-  border: 1.5px solid rgba(212, 175, 55, 0.6);
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #000;
+  border: 1.5px solid rgba(212, 175, 55, 0.7);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
-.shop-nav nav {
+.shop-nav .brand-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.32);
+}
+.nav-main nav {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 24px;
   flex-wrap: wrap;
 }
-.lang-select {
-  background: rgba(255, 255, 255, 0.08);
+.nav-main nav a {
   color: var(--cream);
-  border: 1px solid rgba(212, 175, 55, 0.4);
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.82;
+  position: relative;
+  padding-bottom: 4px;
+  transition: opacity 0.2s ease;
+}
+.nav-main nav a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: 0;
+  height: 2px;
+  background: var(--gold);
+  transition: right 0.25s ease;
+}
+.nav-main nav a:hover { opacity: 1; text-decoration: none; }
+.nav-main nav a:hover::after { right: 0; }
+.lang-select {
+  width: auto;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--cream);
+  border: 1px solid rgba(212, 175, 55, 0.35);
   border-radius: 999px;
-  padding: 6px 10px;
-  font-size: 13px;
+  padding: 5px 10px;
+  font-size: 12px;
   font-family: inherit;
   cursor: pointer;
 }
 .lang-select option { color: var(--ink); }
-.shop-nav nav a {
-  color: var(--cream);
-  font-size: 14px;
-  font-weight: 500;
-  opacity: 0.85;
-  position: relative;
-}
-.shop-nav nav a:hover { opacity: 1; text-decoration: none; }
 .shop-nav .icon-link {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(212, 175, 55, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(212, 175, 55, 0.35);
   color: var(--gold-light);
-  font-size: 16px;
+  font-size: 14px;
+  transition: background 0.2s ease;
 }
+.shop-nav .icon-link:hover { background: rgba(212, 175, 55, 0.16); }
 .shop-nav .badge {
   position: absolute;
   top: -6px;
@@ -119,9 +165,9 @@ header.shop-nav {
 }
 .shop-nav .pill {
   border: 1px solid rgba(212, 175, 55, 0.65);
-  padding: 7px 16px;
+  padding: 6px 15px;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--gold-light);
   background: transparent;
@@ -129,6 +175,10 @@ header.shop-nav {
   font-family: inherit;
 }
 .shop-nav .pill:hover { background: rgba(212, 175, 55, 0.12); text-decoration: none; }
+@media (max-width: 760px) {
+  .nav-utility-inner { justify-content: space-between; }
+  .nav-main-inner { justify-content: center; text-align: center; }
+}
 
 /* ---------- Shine sweep ---------- */
 .shine { position: relative; overflow: hidden; isolation: isolate; }
