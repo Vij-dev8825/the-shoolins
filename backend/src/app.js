@@ -23,7 +23,16 @@ app.use(express.json({ limit: "8mb" }));
 
 // Serves the public marketing pages (/, /about.html, /contact.html) as well
 // as the admin panel (public/admin/index.html, reachable at /admin/).
-app.use(express.static(path.join(__dirname, "../public")));
+// JS/CSS get no-cache so a deployed fix always takes effect on next load —
+// mobile browsers and carrier data-compression proxies otherwise keep
+// serving a stale cached copy after every fix.
+app.use(express.static(path.join(__dirname, "../public"), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith(".js") || filePath.endsWith(".css")) {
+      res.setHeader("Cache-Control", "no-cache");
+    }
+  },
+}));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
