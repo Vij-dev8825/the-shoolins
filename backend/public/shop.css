@@ -575,9 +575,9 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outl
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 .modal-sheet.quickview { max-width: 700px; padding: 0; overflow-x: hidden; overflow-y: auto; }
-.qv-body { display: grid; grid-template-columns: 1fr 1fr; }
+.qv-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 @media (max-width: 640px) { .qv-body { grid-template-columns: 1fr; } }
-.qv-image { position: relative; aspect-ratio: 0.85; background: var(--divider); overflow: hidden; }
+.qv-image { position: relative; width: 100%; aspect-ratio: 0.85; background: var(--divider); overflow: hidden; }
 .qv-image .qv-slides-track { display: flex; height: 100%; touch-action: pan-y; cursor: grab; }
 .qv-image .qv-slides-track img { flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover; -webkit-user-drag: none; user-select: none; }
 .qv-image .gallery-dots { position: absolute; left: 0; right: 0; bottom: 12px; margin: 0; z-index: 2; }

@@ -6,9 +6,9 @@
 <title>Product — The Shoolins</title>
 <link rel="stylesheet" href="/shop.css" />
 <style>
-  .pd-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+  .pd-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; }
   @media (max-width: 760px) { .pd-wrap { grid-template-columns: 1fr; } }
-  .pd-gallery { position: relative; border-radius: 14px; overflow: hidden; background: var(--divider); aspect-ratio: 0.85; }
+  .pd-gallery { position: relative; width: 100%; border-radius: 14px; overflow: hidden; background: var(--divider); aspect-ratio: 0.85; }
   .pd-gallery .slides-track { display: flex; height: 100%; touch-action: pan-y; cursor: grab; }
   .pd-gallery .slides-track img { flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover; -webkit-user-drag: none; user-select: none; }
   .pd-wish-btn {
