@@ -3,7 +3,14 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Product — The Shoolins</title>
+<title>{{OG_TITLE}}</title>
+<meta property="og:site_name" content="The Shoolins" />
+<meta property="og:title" content="{{OG_TITLE}}" />
+<meta property="og:description" content="{{OG_DESCRIPTION}}" />
+<meta property="og:image" content="{{OG_IMAGE}}" />
+<meta property="og:url" content="{{OG_URL}}" />
+<meta property="og:type" content="product" />
+<meta name="twitter:card" content="summary_large_image" />
 <link rel="stylesheet" href="/shop.css" />
 <style>
   .pd-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; }
@@ -25,6 +32,12 @@
     cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.2); font-size: 17px; color: var(--muted); z-index: 2;
   }
   .pd-wish-btn.active { color: var(--error); }
+  .pd-share-btn {
+    position: absolute; top: 64px; right: 14px; width: 40px; height: 40px; border-radius: 50%;
+    background: var(--surface); border: none; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.2); color: #25d366; z-index: 2;
+  }
+  .pd-share-btn svg { width: 19px; height: 19px; }
   .pd-zoom-btn {
     position: absolute; top: 14px; left: 14px; width: 40px; height: 40px; border-radius: 50%;
     background: var(--surface); border: none; display: flex; align-items: center; justify-content: center;
@@ -120,6 +133,7 @@
       <div class="pd-wrap">
         <div class="pd-gallery">
           <button class="pd-wish-btn ${wished ? 'active' : ''}" id="wish-btn">${wished ? '&#10084;' : '&#9825;'}</button>
+          <button class="pd-share-btn" id="share-btn" title="Share on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 1.67c4.55 0 8.25 3.7 8.25 8.24 0 4.55-3.7 8.25-8.25 8.25-1.6 0-3.15-.46-4.5-1.32l-.32-.2-3.12.82.83-3.04-.21-.32a8.18 8.18 0 0 1-1.26-4.19c0-4.54 3.7-8.24 8.25-8.24h.33zm-4.6 4.62c-.15 0-.4.06-.58.27-.19.21-.72.71-.72 1.73 0 1.02.74 2 .84 2.15.1.14 1.4 2.24 3.45 3.05 1.7.68 2.05.55 2.42.51.37-.04 1.2-.49 1.37-.96.17-.47.17-.87.12-.96-.05-.1-.19-.16-.4-.27-.21-.11-1.25-.62-1.44-.69-.19-.07-.34-.11-.48.11-.14.21-.55.69-.68.83-.12.14-.25.15-.46.05-.21-.1-.9-.33-1.72-1.06-.63-.56-1.05-1.25-1.18-1.46-.12-.21-.01-.32.1-.43.11-.11.25-.28.37-.42.12-.14.16-.24.24-.4.08-.16.04-.31-.02-.42-.06-.11-.5-1.2-.68-1.65-.16-.4-.34-.35-.48-.36h-.42z"/></svg></button>
           <button class="pd-zoom-btn" id="zoom-btn" title="Zoom"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg></button>
           <div class="slides-track" id="slides-track"></div>
           ${images.length > 1 ? `
@@ -182,6 +196,7 @@
     document.getElementById('qty-plus').addEventListener('click', () => setQty(quantity + 1));
 
     document.getElementById('wish-btn').addEventListener('click', toggleWishlist);
+    document.getElementById('share-btn').addEventListener('click', shareOnWhatsApp);
     document.getElementById('add-to-cart-btn').addEventListener('click', addToCart);
     document.getElementById('buy-now-btn').addEventListener('click', buyNow);
 
@@ -367,6 +382,12 @@
   function setQty(v) {
     quantity = Math.max(1, Math.min(10, v));
     document.getElementById('qty-value').textContent = quantity;
+  }
+
+  function shareOnWhatsApp() {
+    const url = `${window.location.origin}/product.html?id=${encodeURIComponent(product.id)}&utm_source=whatsapp&utm_medium=share`;
+    const text = `${product.name} — ${Shop.formatInr(product.price)} at The Shoolins\n${url}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   }
 
   async function toggleWishlist() {
