@@ -1,4 +1,5 @@
 const API = '/api';
+const WHATSAPP_BUSINESS_NUMBER = '919487682924';
 
 const BROKEN_IMAGE = 'data:image/svg+xml,' + encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">'
@@ -240,7 +241,7 @@ const Shop = (() => {
             </div>
             <div class="footer-contact-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-              <span>+91 00000 00000</span>
+              <span>+91 94876 82924</span>
             </div>
           </div>
           <div class="footer-col">
@@ -286,6 +287,9 @@ const Shop = (() => {
         </div>
       </footer>
       <button class="scroll-top-btn" id="scroll-top-btn" title="Back to top">&uarr;</button>
+      <a class="whatsapp-chat-btn" id="whatsapp-chat-btn" title="Chat with us on WhatsApp" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 1.67c4.55 0 8.25 3.7 8.25 8.24 0 4.55-3.7 8.25-8.25 8.25-1.6 0-3.15-.46-4.5-1.32l-.32-.2-3.12.82.83-3.04-.21-.32a8.18 8.18 0 0 1-1.26-4.19c0-4.54 3.7-8.24 8.25-8.24h.33zm-4.6 4.62c-.15 0-.4.06-.58.27-.19.21-.72.71-.72 1.73 0 1.02.74 2 .84 2.15.1.14 1.4 2.24 3.45 3.05 1.7.68 2.05.55 2.42.51.37-.04 1.2-.49 1.37-.96.17-.47.17-.87.12-.96-.05-.1-.19-.16-.4-.27-.21-.11-1.25-.62-1.44-.69-.19-.07-.34-.11-.48.11-.14.21-.55.69-.68.83-.12.14-.25.15-.46.05-.21-.1-.9-.33-1.72-1.06-.63-.56-1.05-1.25-1.18-1.46-.12-.21-.01-.32.1-.43.11-.11.25-.28.37-.42.12-.14.16-.24.24-.4.08-.16.04-.31-.02-.42-.06-.11-.5-1.2-.68-1.65-.16-.4-.34-.35-.48-.36h-.42z"/></svg>
+      </a>
     `;
 
     if (typeof I18N !== 'undefined') I18N.apply(mount);
@@ -313,6 +317,9 @@ const Shop = (() => {
     scrollBtn.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
+
+    const whatsappBtn = mount.querySelector('#whatsapp-chat-btn');
+    whatsappBtn.href = `https://wa.me/${WHATSAPP_BUSINESS_NUMBER}?text=${encodeURIComponent('Hi! I have a question about The Shoolins.')}`;
   }
 
   function requireLogin(redirectMessage) {

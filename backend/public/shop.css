@@ -728,6 +728,24 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outl
 }
 .scroll-top-btn.visible { display: flex; }
 .scroll-top-btn:hover { transform: translateY(-3px); }
+.whatsapp-chat-btn {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #25d366;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  z-index: 40;
+  transition: transform 0.2s ease;
+}
+.whatsapp-chat-btn svg { width: 28px; height: 28px; }
+.whatsapp-chat-btn:hover { transform: translateY(-3px); }
 @media (max-width: 900px) {
   .footer-main { grid-template-columns: 1fr 1fr; }
 }
