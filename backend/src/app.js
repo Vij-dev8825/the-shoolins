@@ -17,6 +17,12 @@ const { notFoundHandler, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
 
+// Render terminates SSL upstream and proxies to this app over plain HTTP,
+// so req.protocol reports "http" unless Express is told to trust the
+// X-Forwarded-Proto header — needed for the OG tag URLs below to read
+// https, not http.
+app.set("trust proxy", 1);
+
 app.use(cors());
 // Product images go through here as base64, so the default 100kb JSON body
 // limit needs raising — the admin page also downsizes images client-side
