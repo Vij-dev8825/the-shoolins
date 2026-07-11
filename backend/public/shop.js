@@ -484,6 +484,7 @@ const Shop = (() => {
       const track = backdrop.querySelector('#qv-slides-track');
       const dotsEl = backdrop.querySelector('#qv-dots');
       let index = 0;
+      let pointerActive = false;
       let dragging = false;
       let directionDecided = false;
       let dragStartX = 0;
@@ -508,6 +509,7 @@ const Shop = (() => {
       backdrop.querySelector('#qv-next').addEventListener('click', () => goTo(index + 1 >= images.length ? 0 : index + 1));
 
       track.addEventListener('pointerdown', (e) => {
+        pointerActive = true;
         dragStartX = e.clientX;
         dragStartY = e.clientY;
         dragDeltaX = 0;
@@ -516,8 +518,14 @@ const Shop = (() => {
       });
       // Direction is decided only once the gesture has moved a few pixels —
       // capturing the pointer immediately on pointerdown hijacked every
-      // touch, including a plain vertical scroll inside the modal.
+      // touch, including a plain vertical scroll inside the modal. Bailing
+      // out when the pointer was never actually pressed also matters: a
+      // plain hover fires pointermove too, and without this check the
+      // stale dragStartX/dragStartY (from before any press) would be
+      // diffed against the live cursor position, producing a huge fake
+      // "drag" delta that shoved the whole track off-screen.
       track.addEventListener('pointermove', (e) => {
+        if (!pointerActive) return;
         if (directionDecided && !dragging) return;
         const deltaX = e.clientX - dragStartX;
         const deltaY = e.clientY - dragStartY;
@@ -542,6 +550,7 @@ const Shop = (() => {
           else if (dragDeltaX > 50 && index > 0) goTo(index - 1);
           else goTo(index);
         }
+        pointerActive = false;
         directionDecided = false;
       }
       track.addEventListener('pointerup', endDrag);
