@@ -8,9 +8,17 @@
 <style>
   .pd-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; }
   @media (max-width: 760px) { .pd-wrap { grid-template-columns: 1fr; } }
-  .pd-gallery { position: relative; width: 100%; border-radius: 14px; overflow: hidden; background: var(--divider); aspect-ratio: 0.85; }
-  .pd-gallery .slides-track { display: flex; height: 100%; touch-action: pan-y; cursor: grab; }
+  .pd-gallery { position: relative; width: 100%; height: 0; padding-bottom: 117.65%; border-radius: 14px; overflow: hidden; background: var(--divider); }
+  .pd-gallery .slides-track { position: absolute; inset: 0; display: flex; touch-action: pan-y; cursor: grab; }
   .pd-gallery .slides-track img { flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover; -webkit-user-drag: none; user-select: none; }
+  .pd-arrow-btn {
+    position: absolute; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; border-radius: 50%;
+    background: rgba(255,255,255,0.9); border: none; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,0.2); color: var(--ink); z-index: 2;
+  }
+  .pd-arrow-btn svg { width: 20px; height: 20px; }
+  .pd-arrow-btn.prev { left: 12px; }
+  .pd-arrow-btn.next { right: 12px; }
   .pd-wish-btn {
     position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; border-radius: 50%;
     background: var(--surface); border: none; display: flex; align-items: center; justify-content: center;
@@ -114,6 +122,10 @@
           <button class="pd-wish-btn ${wished ? 'active' : ''}" id="wish-btn">${wished ? '&#10084;' : '&#9825;'}</button>
           <button class="pd-zoom-btn" id="zoom-btn" title="Zoom"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg></button>
           <div class="slides-track" id="slides-track"></div>
+          ${images.length > 1 ? `
+            <button class="pd-arrow-btn prev" id="gallery-prev" title="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <button class="pd-arrow-btn next" id="gallery-next" title="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+          ` : ''}
         </div>
         <div>
           <span class="eyebrow" style="text-transform:uppercase;color:var(--gold-dark);font-size:12px;font-weight:700;letter-spacing:1.5px">${product.category}</span>
@@ -297,6 +309,9 @@
       track.style.transform = `translateX(-${index * 100}%)`;
       dotsEl.querySelectorAll('.dot').forEach((d, i2) => d.classList.toggle('active', i2 === index));
     }
+
+    document.getElementById('gallery-prev').addEventListener('click', () => goTo(index - 1 < 0 ? count - 1 : index - 1));
+    document.getElementById('gallery-next').addEventListener('click', () => goTo(index + 1 >= count ? 0 : index + 1));
 
     track.addEventListener('pointerdown', (e) => {
       dragStartX = e.clientX;

@@ -427,7 +427,11 @@ const Shop = (() => {
         <div class="qv-body">
           <div class="qv-image">
             <div class="qv-slides-track" id="qv-slides-track"></div>
-            ${images.length > 1 ? `<div class="gallery-dots" id="qv-dots"></div>` : ''}
+            ${images.length > 1 ? `
+              <button class="qv-arrow-btn prev" id="qv-prev" title="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <button class="qv-arrow-btn next" id="qv-next" title="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+              <div class="gallery-dots" id="qv-dots"></div>
+            ` : ''}
           </div>
           <div class="qv-details">
             <span class="eyebrow" style="text-transform:uppercase;color:var(--gold-dark);font-size:11px;font-weight:700;letter-spacing:1.5px">${product.category}</span>
@@ -499,6 +503,9 @@ const Shop = (() => {
         track.style.transform = `translateX(-${index * 100}%)`;
         dotsEl.querySelectorAll('.dot').forEach((d, i2) => d.classList.toggle('active', i2 === index));
       }
+
+      backdrop.querySelector('#qv-prev').addEventListener('click', () => goTo(index - 1 < 0 ? images.length - 1 : index - 1));
+      backdrop.querySelector('#qv-next').addEventListener('click', () => goTo(index + 1 >= images.length ? 0 : index + 1));
 
       track.addEventListener('pointerdown', (e) => {
         dragStartX = e.clientX;
