@@ -67,6 +67,21 @@ const Shop = (() => {
     return imgs;
   }
 
+  // Real image URLs (served by the backend, not embedded as data: URIs) for
+  // a current product's cover + gallery photos. Used by the quick-view
+  // modal and the product detail page, where several large inline
+  // base64-encoded images on one page have proven unreliable on some
+  // mobile browsers. Only usable for a live product with a real id — cart/
+  // order/wishlist snapshots keep using the embedded data: URI (imageSrc/
+  // productImages above) since that data must survive the product being
+  // deleted later.
+  function productGalleryUrls(product) {
+    const count = (product.imagesBase64 || []).length;
+    const urls = [`${API}/products/${product.id}/image`];
+    for (let i = 0; i < count; i++) urls.push(`${API}/products/${product.id}/image/${i}`);
+    return urls;
+  }
+
   // Hover-scrub preview: moving the mouse across the thumbnail cycles through
   // the product's photos based on horizontal position, so shoppers can peek
   // at other angles without opening the product page.
@@ -391,7 +406,7 @@ const Shop = (() => {
 
   // ---------- Quick view modal (opened via the eye icon on product cards) ----------
   async function showQuickView(product) {
-    const images = productImages(product);
+    const images = productGalleryUrls(product);
     let quantity = 1;
     let wished = false;
     if (isLoggedIn()) {
@@ -443,10 +458,11 @@ const Shop = (() => {
 
     document.body.appendChild(backdrop);
 
-    // Images are set as a property after insertion, not interpolated into
-    // the innerHTML string above — some mobile browsers are unreliable
-    // parsing very long data: URI attributes embedded in bulk-assigned HTML,
-    // especially with several large photos in the same block.
+    // Images are fetched from real backend URLs (productGalleryUrls) rather
+    // than embedded as data: URIs — several large base64-encoded images
+    // inline on one page proved unreliable on some mobile browsers; a
+    // normal <img src="url"> goes through the standard network image
+    // pipeline instead.
     const qvTrack = backdrop.querySelector('#qv-slides-track');
     images.forEach((src) => {
       const imgEl = document.createElement('img');
@@ -576,7 +592,7 @@ const Shop = (() => {
 
   return {
     getToken, getUser, setSession, clearSession, isLoggedIn,
-    apiFetch, formatInr, imageSrc, productImages, attachHoverScrub, toast,
+    apiFetch, formatInr, imageSrc, productImages, productGalleryUrls, attachHoverScrub, toast,
     renderNav, updateNavAuthState, renderFooter, refreshCartCount, requireLogin, showPaymentSheet,
     showQuickView, markBrokenImagesWithFallback,
   };

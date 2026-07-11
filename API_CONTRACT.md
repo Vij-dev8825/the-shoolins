@@ -18,6 +18,11 @@ JWT sent as `Authorization: Bearer <token>` on all endpoints below.
 
 `imagesBase64` is an array of additional gallery photos beyond the cover (`image`/`imageBase64`) — always `[]` unless the admin uploaded extra photos. Only the product detail screen's scrolling carousel uses it; cards, cart, wishlist, and order history all show just the cover photo.
 
+- `GET /products/:id/image` -> the cover photo as a real `image/jpeg` response (decoded from `imageBase64`, or a redirect to `/products-assets/:image` for the seeded catalog). Public, no auth.
+- `GET /products/:id/image/:index` -> the gallery photo at `imagesBase64[index]` as a real `image/jpeg` response, or `404` if out of range. Public, no auth.
+
+The storefront web app (not the Flutter app) uses these two instead of embedding `imageBase64`/`imagesBase64` as `data:` URIs for the quick-view modal and product detail gallery — several large base64-encoded images inline on one page proved unreliable on some mobile browsers.
+
 Seed data (6 products, ids are strings "1".."6", prices are INR):
 1. Summer Dress, 1999, shirt1.png, women
 2. Casual Shirt, 1499, shirt2.png, men

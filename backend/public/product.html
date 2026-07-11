@@ -80,9 +80,7 @@
   let currentSlideIndex = 0;
 
   function galleryImages(p) {
-    const imgs = [Shop.imageSrc(p)];
-    (p.imagesBase64 || []).forEach((b64) => imgs.push(`data:image/jpeg;base64,${b64}`));
-    return imgs;
+    return Shop.productGalleryUrls(p);
   }
 
   async function loadProduct() {
@@ -142,10 +140,11 @@
       ${images.length > 1 ? `<div class="gallery-dots" id="gallery-dots"></div>` : ''}
     `;
 
-    // Images are set as a property after insertion, not interpolated into
-    // the innerHTML string above — some mobile browsers are unreliable
-    // parsing very long data: URI attributes embedded in bulk-assigned HTML,
-    // especially with several large photos in the same block.
+    // Images are fetched from real backend URLs (galleryImages ->
+    // Shop.productGalleryUrls) rather than embedded as data: URIs —
+    // several large base64-encoded images inline on one page proved
+    // unreliable on some mobile browsers; a normal <img src="url"> goes
+    // through the standard network image pipeline instead.
     const slidesTrack = document.getElementById('slides-track');
     images.forEach((src) => {
       const imgEl = document.createElement('img');
