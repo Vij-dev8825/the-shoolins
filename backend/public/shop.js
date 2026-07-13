@@ -244,11 +244,17 @@ const Shop = (() => {
               <span>+91 94876 82924</span>
             </div>
             <div class="footer-social">
-              <a href="https://www.instagram.com/the_shoolins" target="_blank" rel="noopener" title="Instagram" class="footer-social-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+              <a href="https://www.instagram.com/the_shoolins" target="_blank" rel="noopener" title="Instagram" class="footer-social-icon instagram">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#fff" stroke="none"/></svg>
               </a>
-              <a href="https://wa.me/${WHATSAPP_BUSINESS_NUMBER}" target="_blank" rel="noopener" title="WhatsApp" class="footer-social-icon">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 1.67c4.55 0 8.25 3.7 8.25 8.24 0 4.55-3.7 8.25-8.25 8.25-1.6 0-3.15-.46-4.5-1.32l-.32-.2-3.12.82.83-3.04-.21-.32a8.18 8.18 0 0 1-1.26-4.19c0-4.54 3.7-8.24 8.25-8.24h.33zm-4.6 4.62c-.15 0-.4.06-.58.27-.19.21-.72.71-.72 1.73 0 1.02.74 2 .84 2.15.1.14 1.4 2.24 3.45 3.05 1.7.68 2.05.55 2.42.51.37-.04 1.2-.49 1.37-.96.17-.47.17-.87.12-.96-.05-.1-.19-.16-.4-.27-.21-.11-1.25-.62-1.44-.69-.19-.07-.34-.11-.48.11-.14.21-.55.69-.68.83-.12.14-.25.15-.46.05-.21-.1-.9-.33-1.72-1.06-.63-.56-1.05-1.25-1.18-1.46-.12-.21-.01-.32.1-.43.11-.11.25-.28.37-.42.12-.14.16-.24.24-.4.08-.16.04-.31-.02-.42-.06-.11-.5-1.2-.68-1.65-.16-.4-.34-.35-.48-.36h-.42z"/></svg>
+              <a href="https://www.facebook.com/the_shoolins" target="_blank" rel="noopener" title="Facebook" class="footer-social-icon facebook">
+                <svg viewBox="0 0 24 24" fill="#fff"><path d="M22 12.06C22 6.51 17.52 2 12 2S2 6.51 2 12.06c0 5 3.66 9.13 8.44 9.88v-6.99h-2.54v-2.89h2.54V9.84c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.19 2.24.19v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.87h2.78l-.44 2.89h-2.34V22c4.78-.75 8.44-4.88 8.44-9.94z"/></svg>
+              </a>
+              <a href="https://wa.me/${WHATSAPP_BUSINESS_NUMBER}" target="_blank" rel="noopener" title="WhatsApp" class="footer-social-icon whatsapp">
+                <svg viewBox="0 0 24 24" fill="#fff"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 1.67c4.55 0 8.25 3.7 8.25 8.24 0 4.55-3.7 8.25-8.25 8.25-1.6 0-3.15-.46-4.5-1.32l-.32-.2-3.12.82.83-3.04-.21-.32a8.18 8.18 0 0 1-1.26-4.19c0-4.54 3.7-8.24 8.25-8.24h.33zm-4.6 4.62c-.15 0-.4.06-.58.27-.19.21-.72.71-.72 1.73 0 1.02.74 2 .84 2.15.1.14 1.4 2.24 3.45 3.05 1.7.68 2.05.55 2.42.51.37-.04 1.2-.49 1.37-.96.17-.47.17-.87.12-.96-.05-.1-.19-.16-.4-.27-.21-.11-1.25-.62-1.44-.69-.19-.07-.34-.11-.48.11-.14.21-.55.69-.68.83-.12.14-.25.15-.46.05-.21-.1-.9-.33-1.72-1.06-.63-.56-1.05-1.25-1.18-1.46-.12-.21-.01-.32.1-.43.11-.11.25-.28.37-.42.12-.14.16-.24.24-.4.08-.16.04-.31-.02-.42-.06-.11-.5-1.2-.68-1.65-.16-.4-.34-.35-.48-.36h-.42z"/></svg>
+              </a>
+              <a href="https://www.youtube.com/@the_shoolins" target="_blank" rel="noopener" title="YouTube" class="footer-social-icon youtube">
+                <svg viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
               </a>
             </div>
           </div>
