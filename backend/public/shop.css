@@ -675,6 +675,14 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outl
   line-height: 1.5;
 }
 .footer-contact-item svg { flex-shrink: 0; margin-top: 2px; color: var(--gold-light); width: 16px; height: 16px; }
+.footer-social { display: flex; gap: 10px; margin-top: 14px; }
+.footer-social-icon {
+  width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(212, 175, 55, 0.3); color: var(--gold-light);
+  transition: background 0.2s ease;
+}
+.footer-social-icon svg { width: 18px; height: 18px; }
+.footer-social-icon:hover { background: rgba(212, 175, 55, 0.16); }
 .footer-newsletter p { font-size: 13px; margin: 0 0 16px; color: rgba(250, 246, 236, 0.6); }
 .footer-newsletter-row { display: flex; gap: 8px; }
 .footer-newsletter-row input {
