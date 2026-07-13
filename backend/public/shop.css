@@ -675,18 +675,14 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outl
   line-height: 1.5;
 }
 .footer-contact-item svg { flex-shrink: 0; margin-top: 2px; color: var(--gold-light); width: 16px; height: 16px; }
-.footer-social { display: flex; gap: 10px; margin-top: 14px; }
+.footer-social { display: flex; gap: 12px; margin-top: 16px; }
 .footer-social-icon {
-  width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid rgba(212, 175, 55, 0.45); background: rgba(255, 255, 255, 0.03); color: var(--gold-light);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 .footer-social-icon svg { width: 18px; height: 18px; }
-.footer-social-icon:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
-.footer-social-icon.instagram { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%); }
-.footer-social-icon.facebook { background: #1877f2; }
-.footer-social-icon.whatsapp { background: #25d366; }
-.footer-social-icon.youtube { background: #ff0000; }
+.footer-social-icon:hover { background: rgba(212, 175, 55, 0.14); border-color: var(--gold-light); transform: translateY(-2px); }
 .footer-newsletter p { font-size: 13px; margin: 0 0 16px; color: rgba(250, 246, 236, 0.6); }
 .footer-newsletter-row { display: flex; gap: 8px; }
 .footer-newsletter-row input {
