@@ -19,10 +19,11 @@ model User {
   photoBase64 String?
   createdAt   DateTime @default(now())
 
-  cartItems CartItem[]
-  orders    Order[]
-  wishlist  WishlistItem[]
-  reviews   Review[]
+  cartItems    CartItem[]
+  orders       Order[]
+  wishlist     WishlistItem[]
+  reviews      Review[]
+  chatMessages ChatMessage[]
 }
 
 model Product {
@@ -135,4 +136,19 @@ model ContactMessage {
   phone     String?
   message   String   @db.Text
   createdAt DateTime @default(now())
+}
+
+// Support chat between a logged-in customer and the admin. `read` means
+// "has the recipient seen this message" — for a customer message that's
+// the admin (drives the admin inbox's unread count), for an admin message
+// that's the customer.
+model ChatMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  sender    String
+  message   String   @db.Text
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

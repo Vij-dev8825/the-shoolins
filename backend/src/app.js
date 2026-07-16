@@ -12,6 +12,7 @@ const reviewRoutes = require("./routes/reviews");
 const enquiryRoutes = require("./routes/enquiries");
 const newsletterRoutes = require("./routes/newsletter");
 const contactRoutes = require("./routes/contact");
+const chatRoutes = require("./routes/chat");
 const adminRoutes = require("./routes/admin");
 const { notFoundHandler, errorHandler } = require("./middleware/errorHandler");
 
@@ -89,6 +90,7 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/enquiries", enquiryRoutes);
 app.use("/api/newsletter", newsletterRoutes);
 app.use("/api/contact", contactRoutes);
+app.use("/api/chat", chatRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.use(notFoundHandler);

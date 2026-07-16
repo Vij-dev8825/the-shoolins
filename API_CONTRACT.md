@@ -60,6 +60,10 @@ Seed data (6 products, ids are strings "1".."6", prices are INR):
 ## Contact (general "Contact Us" form, distinct from bulk enquiries)
 - `POST /contact` body `{ name, email, phone?, message }` -> `201 { id, received: true }`. Public, no auth. Listed only via `GET /admin/contact-messages` (admin auth required).
 
+## Chat (support chat, auth required)
+- `GET /chat` -> `200 [{ id, userId, sender, message, read, createdAt }]`, ascending, the logged-in customer's own thread. Marks any unread admin messages as read as a side effect.
+- `POST /chat` body `{ message }` -> `201` created message (`sender` always `"customer"`).
+
 ## Admin (product management)
 A minimal password-protected web UI lives at `/admin` (static page, not under `/api`). It calls these endpoints:
 - `POST /admin/login` body `{ password }` -> `200 { token }` (checked against `ADMIN_PASSWORD` env var) or `401`. Token carries `{ role: "admin" }`, expires in 12h.
@@ -70,6 +74,9 @@ A minimal password-protected web UI lives at `/admin` (static page, not under `/
 - `DELETE /admin/products/:id` -> `204`, or `404`. Cascades to any existing cart/wishlist rows referencing it.
 - `GET /admin/enquiries` -> `200 [{ id, name, company, email, phone, productInterest, quantity, message, createdAt }]`, newest first.
 - `GET /admin/contact-messages` -> `200 [{ id, name, email, phone, message, createdAt }]`, newest first.
+- `GET /admin/chat/conversations` -> `200 [{ userId, name, mobile, lastMessage, lastMessageAt, unreadCount }]`, one row per customer who has ever messaged, newest conversation first. `unreadCount` counts unseen customer messages.
+- `GET /admin/chat/conversations/:userId` -> `200 [{ id, userId, sender, message, read, createdAt }]`, ascending, that customer's full thread. Marks unread customer messages as read as a side effect.
+- `POST /admin/chat/conversations/:userId/reply` body `{ message }` -> `201` created message (`sender` always `"admin"`), or `404` if the customer doesn't exist.
 
 ## Errors
 All error responses: `{ error: "message" }` with appropriate 4xx/5xx status.

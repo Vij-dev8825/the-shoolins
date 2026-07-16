@@ -102,6 +102,32 @@
   }
   .row-actions { display: flex; gap: 8px; }
   .error { color: var(--error); font-size: 13px; margin-top: 8px; }
+  .badge {
+    display: inline-block;
+    min-width: 18px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background: var(--error);
+    color: var(--surface);
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .chat-window {
+    height: 360px; overflow-y: auto; padding: 14px;
+    border: 1px solid var(--divider); border-radius: 8px; background: var(--surface-muted);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .chat-bubble-row { display: flex; }
+  .chat-bubble-row.admin { justify-content: flex-end; }
+  .chat-bubble {
+    max-width: 75%; padding: 8px 12px; border-radius: 12px; font-size: 13px; line-height: 1.4;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .chat-bubble-row.admin .chat-bubble { background: var(--gold); color: var(--ink); border-bottom-right-radius: 3px; }
+  .chat-bubble-row.customer .chat-bubble { background: var(--surface); border: 1px solid var(--divider); border-bottom-left-radius: 3px; }
+  .chat-reply-row { display: flex; gap: 8px; margin-top: 12px; }
+  .chat-reply-row input { flex: 1; }
   .login-wrap {
     max-width: 340px;
     margin: 15vh auto;
@@ -181,6 +207,28 @@
         <tbody id="enquiry-rows"></tbody>
       </table>
     </div>
+
+    <div class="card">
+      <h2>Customer Support Chat</h2>
+      <div id="chat-list-view">
+        <table>
+          <thead>
+            <tr><th>Customer</th><th>Mobile</th><th>Last message</th><th>When</th><th></th></tr>
+          </thead>
+          <tbody id="chat-conversation-rows"></tbody>
+        </table>
+      </div>
+      <div id="chat-thread-view" style="display:none">
+        <button class="secondary" id="chat-back-btn" style="margin-bottom:12px">&larr; All conversations</button>
+        <h3 id="chat-thread-name" style="margin:0 0 10px"></h3>
+        <div class="chat-window" id="chat-thread-messages"></div>
+        <div class="chat-reply-row">
+          <input id="chat-reply-input" type="text" placeholder="Type a reply…" />
+          <button class="primary" id="chat-reply-btn" style="margin-top:0">Send</button>
+        </div>
+        <div class="error" id="chat-reply-error"></div>
+      </div>
+    </div>
   </main>
 </div>
 
@@ -199,6 +247,14 @@ function showApp() {
   app.style.display = 'block';
   loadProducts();
   loadEnquiries();
+  loadChatConversations();
+  chatPollTimer = setInterval(() => {
+    if (activeChatUserId) {
+      loadChatThread(activeChatUserId, activeChatName, true);
+    } else {
+      loadChatConversations();
+    }
+  }, 8000);
 }
 
 function showLogin() {
@@ -231,6 +287,7 @@ document.getElementById('login-btn').addEventListener('click', async () => {
 document.getElementById('logout-btn').addEventListener('click', () => {
   localStorage.removeItem('admin_token');
   token = null;
+  if (chatPollTimer) clearInterval(chatPollTimer);
   showLogin();
 });
 
@@ -512,6 +569,139 @@ async function loadEnquiries() {
     rows.innerHTML = `<tr><td colspan="7" class="error">${e.message}</td></tr>`;
   }
 }
+
+let chatPollTimer = null;
+let activeChatUserId = null;
+let activeChatName = null;
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function formatChatTime(iso) {
+  const d = new Date(iso);
+  return `${formatDate(iso)} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+async function loadChatConversations() {
+  const rows = document.getElementById('chat-conversation-rows');
+  try {
+    const conversations = await apiFetch('/chat/conversations', { headers: authHeaders() });
+    if (!conversations.length) {
+      rows.innerHTML = '<tr><td colspan="5">No customer messages yet.</td></tr>';
+      return;
+    }
+    rows.innerHTML = '';
+    for (const c of conversations) {
+      const tr = document.createElement('tr');
+
+      const nameTd = document.createElement('td');
+      nameTd.textContent = c.name;
+      if (c.unreadCount > 0) {
+        const badge = document.createElement('span');
+        badge.className = 'badge';
+        badge.textContent = c.unreadCount;
+        badge.style.marginLeft = '8px';
+        nameTd.appendChild(badge);
+      }
+
+      const mobileTd = document.createElement('td');
+      mobileTd.textContent = c.mobile || '—';
+
+      const lastTd = document.createElement('td');
+      lastTd.textContent = c.lastMessage.length > 60 ? `${c.lastMessage.slice(0, 60)}…` : c.lastMessage;
+
+      const whenTd = document.createElement('td');
+      whenTd.textContent = formatChatTime(c.lastMessageAt);
+
+      const actionsTd = document.createElement('td');
+      const viewBtn = document.createElement('button');
+      viewBtn.className = 'secondary';
+      viewBtn.textContent = 'View';
+      viewBtn.addEventListener('click', () => openChatThread(c.userId, c.name));
+      actionsTd.appendChild(viewBtn);
+
+      tr.appendChild(nameTd);
+      tr.appendChild(mobileTd);
+      tr.appendChild(lastTd);
+      tr.appendChild(whenTd);
+      tr.appendChild(actionsTd);
+      rows.appendChild(tr);
+    }
+  } catch (e) {
+    rows.innerHTML = `<tr><td colspan="5" class="error">${e.message}</td></tr>`;
+  }
+}
+
+function renderChatThreadMessages(messages) {
+  const box = document.getElementById('chat-thread-messages');
+  box.innerHTML = messages.map((m) => `
+    <div class="chat-bubble-row ${m.sender}">
+      <div class="chat-bubble">${escapeHtml(m.message)}</div>
+    </div>
+  `).join('') || '<p style="color:var(--muted); text-align:center">No messages yet.</p>';
+  box.scrollTop = box.scrollHeight;
+}
+
+async function loadChatThread(userId, name, silent) {
+  const box = document.getElementById('chat-thread-messages');
+  if (!silent) box.innerHTML = '<p style="color:var(--muted)">Loading…</p>';
+  try {
+    const messages = await apiFetch(`/chat/conversations/${userId}`, { headers: authHeaders() });
+    renderChatThreadMessages(messages);
+  } catch (e) {
+    if (!silent) box.innerHTML = `<p class="error">${e.message}</p>`;
+  }
+}
+
+function openChatThread(userId, name) {
+  activeChatUserId = userId;
+  activeChatName = name;
+  document.getElementById('chat-list-view').style.display = 'none';
+  document.getElementById('chat-thread-view').style.display = 'block';
+  document.getElementById('chat-thread-name').textContent = name;
+  document.getElementById('chat-reply-error').textContent = '';
+  loadChatThread(userId, name);
+}
+
+document.getElementById('chat-back-btn').addEventListener('click', () => {
+  activeChatUserId = null;
+  activeChatName = null;
+  document.getElementById('chat-thread-view').style.display = 'none';
+  document.getElementById('chat-list-view').style.display = 'block';
+  loadChatConversations();
+});
+
+async function sendChatReply() {
+  const input = document.getElementById('chat-reply-input');
+  const message = input.value.trim();
+  if (!message || !activeChatUserId) return;
+  const btn = document.getElementById('chat-reply-btn');
+  const errEl = document.getElementById('chat-reply-error');
+  errEl.textContent = '';
+  btn.disabled = true;
+  try {
+    await apiFetch(`/chat/conversations/${activeChatUserId}/reply`, {
+      method: 'POST',
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ message }),
+    });
+    input.value = '';
+    await loadChatThread(activeChatUserId, activeChatName, true);
+  } catch (e) {
+    errEl.textContent = e.message;
+  } finally {
+    btn.disabled = false;
+    input.focus();
+  }
+}
+
+document.getElementById('chat-reply-btn').addEventListener('click', sendChatReply);
+document.getElementById('chat-reply-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') sendChatReply();
+});
 </script>
 </body>
 </html>

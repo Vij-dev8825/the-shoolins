@@ -141,4 +141,76 @@ router.get("/contact-messages", async (req, res, next) => {
   }
 });
 
+// One row per customer who has ever messaged, newest conversation first,
+// with an unread count driven by unseen customer messages.
+router.get("/chat/conversations", async (req, res, next) => {
+  try {
+    const messages = await prisma.chatMessage.findMany({
+      orderBy: { createdAt: "desc" },
+      include: { user: { select: { id: true, name: true, mobile: true } } },
+    });
+    const conversations = new Map();
+    for (const m of messages) {
+      if (!conversations.has(m.userId)) {
+        conversations.set(m.userId, {
+          userId: m.userId,
+          name: m.user.name || m.user.mobile,
+          mobile: m.user.mobile,
+          lastMessage: m.message,
+          lastMessageAt: m.createdAt,
+          unreadCount: 0,
+        });
+      }
+    }
+    const unread = await prisma.chatMessage.groupBy({
+      by: ["userId"],
+      where: { sender: "customer", read: false },
+      _count: { _all: true },
+    });
+    for (const u of unread) {
+      if (conversations.has(u.userId)) {
+        conversations.get(u.userId).unreadCount = u._count._all;
+      }
+    }
+    res.status(200).json([...conversations.values()]);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/chat/conversations/:userId", async (req, res, next) => {
+  try {
+    const messages = await prisma.chatMessage.findMany({
+      where: { userId: req.params.userId },
+      orderBy: { createdAt: "asc" },
+    });
+    await prisma.chatMessage.updateMany({
+      where: { userId: req.params.userId, sender: "customer", read: false },
+      data: { read: true },
+    });
+    res.status(200).json(messages);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/chat/conversations/:userId/reply", async (req, res, next) => {
+  try {
+    const { message } = req.body || {};
+    if (!message || !message.trim()) {
+      throw new HttpError(400, "message is required");
+    }
+    const user = await prisma.user.findUnique({ where: { id: req.params.userId } });
+    if (!user) {
+      throw new HttpError(404, "Customer not found");
+    }
+    const chatMessage = await prisma.chatMessage.create({
+      data: { userId: req.params.userId, sender: "admin", message: message.trim() },
+    });
+    res.status(201).json(chatMessage);
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;
